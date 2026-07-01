@@ -2,6 +2,21 @@
 
 The crate supports TxLINE Devnet only in this implementation phase.
 
+## IDL Source
+
+Use upstream `documentation/programs/devnet.mdx` as the Devnet IDL source, not
+the top-level upstream `idl/txoracle.json`. The top-level file currently points
+at mainnet address `9ExbZjAapQww1vfcisDmrngPinHTEfpjYRWMunJgcKaA` and version
+`1.4.7`.
+
+The Devnet docs currently identify program
+`6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J` and IDL version `1.5.2`. The
+upstream PR examples branch `nojira-re-adding-examples` includes a Devnet IDL
+copy at `examples/devnet/idl/txoracle.json` with the same program ID, version
+`1.5.5`, and the additional `validate_stat_v2` instruction. This SDK implements
+the PR parity surface pinned to commit
+`8dfc6608252f4034a0279b48578c8fe07b949af0` while remaining Devnet-only.
+
 ## Canonical Values
 
 | Value | Devnet |
@@ -25,6 +40,7 @@ The crate supports TxLINE Devnet only in this implementation phase.
   secrets.
 - `seq` is rejected when it is zero or negative before validation requests are
   sent.
+- Default tests do not contact live Devnet RPC or TxLINE APIs.
 
 ## Custom RPC URLs
 
@@ -50,6 +66,8 @@ TXLINE_DEVNET_JWT=...
 TXLINE_DEVNET_API_TOKEN=...
 TXLINE_FIXTURE_ID=17952170
 TXLINE_SCORE_SEQ=941
+TXLINE_WALLET=/path/to/devnet-wallet.json
+TXLINE_VALIDATE_ON_CHAIN=1
 ```
 
 Do not fake live validation. If credentials are unavailable, report the flow as
@@ -59,3 +77,9 @@ not run.
 
 Free tiers do not require TxL payment, but users still need Devnet SOL for
 Solana fees and possible rent.
+
+`devnet_free_tier` and `devnet_setup_user` can run the setup flow from a wallet
+path. They fetch pricing matrix data, create the user's Token-2022 ATA when
+missing, submit `subscribe`, sign the activation message, and keep the activated
+API token in memory. Do not log or commit tokens, wallet signatures, keypairs,
+seed phrases, or private keys.
