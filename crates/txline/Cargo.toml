@@ -4,6 +4,7 @@ version = "0.0.0"
 edition.workspace = true
 rust-version.workspace = true
 description = "Devnet-only Rust SDK for TxLINE."
+license = "MIT OR Apache-2.0"
 publish = false
 
 [lib]

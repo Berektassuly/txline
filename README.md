@@ -2,21 +2,35 @@
 
 Devnet-only Rust SDK for TxLINE.
 
-This implementation intentionally supports **TxLINE Devnet only**. Mainnet
-constants, feature flags, examples, and transaction flows are out of scope for
-this phase.
+[Architecture](docs/architecture.md) |
+[Devnet model](docs/devnet-first.md) |
+[Validation](docs/validation.md) |
+[Security](SECURITY.md) |
+[Contributing](CONTRIBUTING.md)
 
-## Devnet Values
+> [!IMPORTANT]
+> This repository intentionally supports TxLINE Devnet only. Mainnet constants,
+> feature flags, examples, and transaction flows are out of scope until the
+> Devnet SDK path has been reviewed end to end.
 
-| Value | Devnet |
-| --- | --- |
-| API host | `https://txline-dev.txodds.com` |
-| API base | `https://txline-dev.txodds.com/api` |
-| Guest auth URL | `https://txline-dev.txodds.com/auth/guest/start` |
-| Program ID | `6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J` |
-| TxL mint | `4Zao8ocPhmMgq7PdsYWyxvqySMGx7xb9cMftPMkEokRG` |
-| USDT mint | `ELWTKspHKCnCfCiCiqYw1EDH77k8VCP74dK9qytG2Ujh` |
-| Default RPC | `https://api.devnet.solana.com` |
+## Overview
+
+`txline-rs` provides a small Rust client for the current TxLINE Devnet APIs and
+Solana program addresses. It is built around fixed Devnet constants, explicit
+credential handling, and conservative transaction and validation helpers.
+
+The crate currently includes:
+
+- Devnet configuration and client construction.
+- Guest JWT acquisition and activated API token storage.
+- REST clients for fixtures, odds, scores, validation, and purchase quotes.
+- SSE odds and scores streams with reconnect support, `Last-Event-ID`, and
+  heartbeat filtering.
+- Legacy and V2 score stat-validation DTOs and conversion helpers.
+- Proof hash decoding from base64, hex, and byte arrays.
+- V2 strategy builders for single, binary, geometric, and distance predicates.
+- Devnet PDA helpers and Token-2022 associated token account derivation.
+- Anchor-compatible `subscribe(service_level_id, weeks)` transaction helpers.
 
 ## Quick Start
 
@@ -24,14 +38,13 @@ this phase.
 use txline::{ApiToken, GuestJwt, TxlineClient, TxlineConfig};
 
 # async fn run() -> txline::Result<()> {
-let cfg = TxlineConfig::devnet();
-let client = TxlineClient::new(cfg)?;
+let client = TxlineClient::new(TxlineConfig::devnet())?;
 
 let guest = client.start_guest_session().await?;
 
-// After a confirmed Devnet subscribe transaction, sign:
+// After a confirmed Devnet subscribe transaction, sign this message with the
+// subscribing wallet and pass the base64 detached signature to activation.
 let message = client.activation_preimage("SUBSCRIBE_TX_SIGNATURE", &[])?;
-// Then call activate_subscription with the base64 detached wallet signature.
 
 client.set_guest_jwt(GuestJwt::new(guest.token.as_str())?);
 client.set_api_token(ApiToken::new("activated-api-token")?);
@@ -42,7 +55,7 @@ println!("fixtures: {}", fixtures.len());
 # }
 ```
 
-Activation signs this exact preimage:
+The activation preimage is:
 
 ```text
 ${txSig}:${selectedLeagues.join(",")}:${jwt}
@@ -54,31 +67,35 @@ For the standard bundle with no selected leagues:
 ${txSig}::${jwt}
 ```
 
-## Implemented
+## Devnet Configuration
 
-- Devnet config and client construction.
-- Guest JWT acquisition and storage.
-- API-token activation request after Devnet `subscribe`.
-- Authenticated REST access for fixtures, odds, scores, validation, and purchase quotes.
-- Legacy and V2 scores stat-validation DTOs and conversion helpers.
-- 32-byte proof hash decoding from base64, hex, and byte arrays.
-- V2 strategy builder for single, binary, geometric, and distance predicates.
-- Devnet PDA helpers, including Token-2022 ATA derivation.
-- Anchor-compatible `subscribe(service_level_id, weeks)` instruction and sign/send helpers.
-- SSE parsing and reconnecting odds/scores stream wrappers.
-- Tests for Devnet constants, activation preimages, redaction, proof decoding, PDA derivation, V2 ordering, and strategy bounds.
+The canonical configuration is `TxlineConfig::devnet()`.
 
-## Still Intentional Future Work
+| Value | Devnet |
+| --- | --- |
+| API host | `https://txline-dev.txodds.com` |
+| API base | `https://txline-dev.txodds.com/api` |
+| Guest auth URL | `https://txline-dev.txodds.com/auth/guest/start` |
+| Program ID | `6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J` |
+| TxL mint | `4Zao8ocPhmMgq7PdsYWyxvqySMGx7xb9cMftPMkEokRG` |
+| USDT mint | `ELWTKspHKCnCfCiCiqYw1EDH77k8VCP74dK9qytG2Ujh` |
+| Default RPC | `https://api.devnet.solana.com` |
 
-- Mainnet support.
-- Full Anchor client bindings for on-chain validation transactions.
-- Full purchase-quote transaction audit before signing. The SDK decodes quote bytes and checks financial shape, but callers must still inspect fee payer, signers, invoked programs, account metas, and decoded instruction before signing paid quote transactions.
-- Live integration tests with real Devnet credentials.
+Custom RPC URLs are allowed for Devnet providers:
+
+```rust,no_run
+# use txline::TxlineConfig;
+let cfg = TxlineConfig::devnet()
+    .with_rpc_url("https://custom-rpc.example.com/solana/devnet");
+```
+
+Validation rejects empty RPC URLs and obvious mainnet-looking RPC overrides, but
+callers are still responsible for providing a real Devnet RPC endpoint.
 
 ## Examples
 
 Examples require caller-provided Devnet credentials. They do not contain real
-tokens or private keys.
+tokens, signatures, seed phrases, or private keys.
 
 ```bash
 cargo run -p txline --example devnet_free_tier
@@ -87,7 +104,7 @@ cargo run -p txline --example devnet_validate_stat
 cargo run -p txline --example devnet_validate_stat_v2
 ```
 
-Common env vars:
+Common environment variables:
 
 ```bash
 TXLINE_DEVNET_JWT=...
@@ -95,21 +112,35 @@ TXLINE_DEVNET_API_TOKEN=...
 TXLINE_FIXTURE_ID=17952170
 TXLINE_SCORE_SEQ=941
 TXLINE_STAT_KEY=1002
-TXLINE_STAT_KEYS=1,2,3001,3002
+TXLINE_STAT_KEYS=1001,1002,1007,2007
 ```
 
-`TXLINE_SCORE_SEQ` must come from a real score record observed through snapshot,
-updates, historical scores, or the scores stream.
+`TXLINE_SCORE_SEQ` must come from a real score record observed through a
+snapshot, update endpoint, historical score query, or the scores stream.
 
-## Verification
+## Repository Guide
+
+- [Architecture](docs/architecture.md): crate layout, runtime flows, and design
+  boundaries.
+- [Devnet model](docs/devnet-first.md): fixed constants, RPC guardrails, and
+  intentional non-goals.
+- [Validation](docs/validation.md): legacy and V2 score stat-validation payloads.
+- [Security](docs/security.md): secrets, wallet signatures, purchase quotes, and
+  stream behavior.
+- [Security policy](SECURITY.md): how to report vulnerabilities.
+- [Contributing](CONTRIBUTING.md): local workflow and review expectations.
+
+## Development
+
+The workspace uses Rust 2024 and currently declares MSRV `1.96`.
 
 ```bash
-cargo fmt
+cargo fmt --check
 cargo check --all-features
 cargo test
 ```
 
-Normal tests do not require live Devnet credentials.
+Normal tests are offline and do not require live TxLINE Devnet credentials.
 
 ## Sources
 
@@ -119,5 +150,3 @@ Normal tests do not require live Devnet credentials.
 - Streaming docs: <https://txline.txodds.com/documentation/examples/streaming-data>
 - On-chain validation docs: <https://txline.txodds.com/documentation/examples/onchain-validation>
 - Devnet examples branch: <https://github.com/txodds/tx-on-chain/tree/nojira-re-adding-examples>
-- PR #3: <https://github.com/txodds/tx-on-chain/pull/3>
-- PR #4: <https://github.com/txodds/tx-on-chain/pull/4>
