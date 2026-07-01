@@ -3,7 +3,7 @@ name = "txline"
 version = "0.0.0"
 edition.workspace = true
 rust-version.workspace = true
-description = "Rust SDK scaffold for TxLINE."
+description = "Devnet-only Rust SDK for TxLINE."
 publish = false
 
 [lib]
@@ -11,12 +11,38 @@ name = "txline"
 path = "src/lib.rs"
 
 [features]
-default = ["http", "devnet"]
+default = ["http", "stream", "solana", "validation", "devnet"]
 http = []
 stream = ["http"]
 solana = []
 validation = ["solana"]
 devnet = []
-mainnet = []
 
 [dependencies]
+async-stream = "0.3.6"
+base64 = "0.22.1"
+futures-util = "0.3.32"
+reqwest = { version = "0.13.4", default-features = false, features = ["json", "query", "rustls", "stream"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.150"
+solana-client = "4.1.0"
+solana-sdk = "4.0.1"
+thiserror = "2.0.18"
+tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread", "time"] }
+url = "2.5.7"
+
+[[example]]
+name = "devnet_free_tier"
+path = "../../examples/devnet_free_tier.rs"
+
+[[example]]
+name = "devnet_scores_stream"
+path = "../../examples/devnet_scores_stream.rs"
+
+[[example]]
+name = "devnet_validate_stat"
+path = "../../examples/devnet_validate_stat.rs"
+
+[[example]]
+name = "devnet_validate_stat_v2"
+path = "../../examples/devnet_validate_stat_v2.rs"

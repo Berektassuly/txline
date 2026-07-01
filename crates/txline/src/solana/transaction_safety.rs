@@ -1,6 +1,26 @@
-//! Transaction safety scaffolding.
+//! Conservative purchase-quote safety primitives.
 //!
-//! Purchase quote transactions must be inspected before signing. Future checks
-//! should verify the fee payer, expected backend/admin signature, allowed
-//! programs, signer roles, decoded instruction name, requested amount, and that
-//! no extra oracle instructions are present.
+//! This pass does not include a full decoded Solana transaction audit. The
+//! helpers here intentionally stop at checks the SDK can perform without Anchor
+//! program bindings: amount bounds, base64 transaction decoding, and financial
+//! consistency. Callers should still inspect fee payer, signer set, invoked
+//! programs, account metas, and decoded oracle instruction before signing paid
+//! purchase transactions.
+
+use super::pda::{
+    ASSOCIATED_TOKEN_PROGRAM_ID, COMPUTE_BUDGET_PROGRAM_ID, SYSTEM_PROGRAM_ID,
+    TOKEN_2022_PROGRAM_ID,
+};
+
+pub const LEGACY_TOKEN_PROGRAM_ID: &str = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+
+pub fn allowed_purchase_programs<'a>(txline_program_id: &'a str) -> [&'a str; 6] {
+    [
+        txline_program_id,
+        COMPUTE_BUDGET_PROGRAM_ID,
+        SYSTEM_PROGRAM_ID,
+        LEGACY_TOKEN_PROGRAM_ID,
+        TOKEN_2022_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+    ]
+}

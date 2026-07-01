@@ -1,30 +1,129 @@
-//! Authentication lifecycle scaffolding.
-//!
-//! TxLINE currently uses two credentials with different lifecycles:
-//!
-//! - A guest JWT from `/auth/guest/start`, sent as
-//!   `Authorization: Bearer <jwt>`.
-//! - An activated API token from `/api/token/activate`, sent as
-//!   `X-Api-Token: <api-token>`.
-//!
-//! The OpenAPI description states that the guest JWT expires after 30 days.
-//! Future retry logic should renew the guest JWT on HTTP 401 from the same host
-//! and preserve the activated API token for the retried request. Re-activation
-//! is not required just because the guest JWT expired.
-//!
-//! Activation signs the strict preimage
-//! `${txSig}:${selectedLeagues.join(",")}:${jwt}`. For an empty league list the
-//! signed message is `${txSig}::${jwt}`. The detached signature is base64
-//! encoded and posted with the confirmed `txSig` and `leagues` array.
-//!
-//! Never log guest JWTs, activated API tokens, private keys, or unredacted
-//! request headers.
+//! Guest JWTs, activated API tokens, and activation preimages.
 
-/// Guest JWT and activated API token placeholders.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct AuthTokens {
-    /// Guest JWT from the matching TxLINE host.
-    pub jwt: Option<String>,
-    /// Activated API token for data endpoints.
-    pub api_token: Option<String>,
+use std::fmt;
+
+use reqwest::header::{AUTHORIZATION, HeaderMap, HeaderValue};
+use serde::{Deserialize, Serialize};
+
+use crate::{Result, TxlineError};
+
+pub const API_TOKEN_HEADER: &str = "X-Api-Token";
+
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GuestJwt(String);
+
+impl GuestJwt {
+    pub fn new(token: impl Into<String>) -> Result<Self> {
+        let token = token.into();
+        if token.trim().is_empty() {
+            return Err(TxlineError::invalid_input("guest JWT must not be empty"));
+        }
+        Ok(Self(token))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl fmt::Debug for GuestJwt {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("GuestJwt(<redacted>)")
+    }
+}
+
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ApiToken(String);
+
+impl ApiToken {
+    pub fn new(token: impl Into<String>) -> Result<Self> {
+        let token = token.into();
+        if token.trim().is_empty() {
+            return Err(TxlineError::invalid_input("API token must not be empty"));
+        }
+        Ok(Self(token))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl fmt::Debug for ApiToken {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("ApiToken(<redacted>)")
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GuestSession {
+    pub token: GuestJwt,
+}
+
+#[derive(Clone, PartialEq, Eq)]
+pub struct AuthHeaders {
+    authorization: GuestJwt,
+    api_token: Option<ApiToken>,
+}
+
+impl AuthHeaders {
+    pub fn new(authorization: GuestJwt, api_token: Option<ApiToken>) -> Self {
+        Self {
+            authorization,
+            api_token,
+        }
+    }
+
+    pub fn to_header_map(&self) -> Result<HeaderMap> {
+        let mut headers = HeaderMap::new();
+        let auth_value = format!("Bearer {}", self.authorization.as_str());
+        headers.insert(AUTHORIZATION, HeaderValue::from_str(&auth_value)?);
+        if let Some(api_token) = &self.api_token {
+            headers.insert(API_TOKEN_HEADER, HeaderValue::from_str(api_token.as_str())?);
+        }
+        Ok(headers)
+    }
+
+    pub fn has_api_token(&self) -> bool {
+        self.api_token.is_some()
+    }
+}
+
+impl fmt::Debug for AuthHeaders {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("AuthHeaders")
+            .field("authorization", &"<redacted>")
+            .field("api_token", &self.api_token.as_ref().map(|_| "<redacted>"))
+            .finish()
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct TokenResponse {
+    pub token: String,
+}
+
+#[derive(Debug, Serialize)]
+pub(crate) struct ActivationPayload<'a> {
+    #[serde(rename = "txSig")]
+    pub tx_sig: &'a str,
+    #[serde(rename = "walletSignature")]
+    pub wallet_signature: &'a str,
+    pub leagues: &'a [i32],
+}
+
+/// Build the exact message that must be signed for `/api/token/activate`.
+///
+/// Empty league lists intentionally produce `txSig::jwt`.
+pub fn activation_preimage(
+    tx_sig: impl AsRef<str>,
+    selected_leagues: &[i32],
+    jwt: &GuestJwt,
+) -> String {
+    let leagues = selected_leagues
+        .iter()
+        .map(i32::to_string)
+        .collect::<Vec<_>>()
+        .join(",");
+    format!("{}:{}:{}", tx_sig.as_ref(), leagues, jwt.as_str())
 }

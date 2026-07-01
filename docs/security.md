@@ -1,76 +1,48 @@
 # Security
 
-This SDK will touch credentials, wallet signatures, Solana transactions, and
-settlement proofs. The scaffold does not implement those flows yet, but the
-safety rules should shape every future change.
-
 ## Secrets
 
-Never log or commit:
+The SDK accepts caller-provided guest JWTs, activated API tokens, wallet
+signatures, and Solana signers. It does not manage private keys or persist
+secrets.
 
-- guest JWTs,
-- activated API tokens,
-- private keys,
-- seed phrases,
-- unredacted `Authorization` headers,
-- unredacted `X-Api-Token` headers,
-- full request/response dumps that contain credentials.
+`GuestJwt`, `ApiToken`, and `AuthHeaders` redact their `Debug` output. Do not log
+raw `HeaderMap` values, request bodies, private keys, seed phrases, or detached
+wallet signatures.
 
-Examples and tests should use placeholders or redacted prefixes only.
+## Activation
 
-## Network Isolation
-
-Mainnet and Devnet values must not be mixed. A valid on-chain transaction on one
-network can still fail activation if sent to the other network's API host.
-
-The SDK should eventually validate that these values come from the same network:
-
-- Solana RPC URL,
-- program ID,
-- TxL mint,
-- guest JWT URL,
-- activation URL,
-- API base URL,
-- IDL or generated program type.
-
-## Activation Signatures
-
-The activation preimage is exact:
+The SDK centralizes the activation message:
 
 ```text
 ${txSig}:${selectedLeagues.join(",")}:${jwt}
 ```
 
-For empty leagues:
+Empty league lists produce:
 
 ```text
 ${txSig}::${jwt}
 ```
 
-The signature must be a base64 detached wallet signature from the wallet that
-submitted the `subscribe` transaction.
+The wallet signature must come from the wallet that submitted the Devnet
+`subscribe` transaction.
 
-## Purchase Quote Safety
+## Purchase Quotes
 
-Before signing a purchase quote transaction, future SDK code should inspect:
+The SDK can request a Devnet purchase quote, decode the returned transaction
+bytes, and check the financial shape. It does not yet perform a full decoded
+transaction audit. Before signing paid quote transactions, inspect:
 
-- fee payer equals the expected buyer wallet,
-- backend/admin signature is present when required,
-- every invoked program ID is allowed,
-- buyer is not a signer for unexpected instructions,
-- the decoded oracle instruction is the expected purchase instruction,
-- the TxL amount matches the requested amount,
-- there is exactly one expected oracle instruction.
+- fee payer,
+- signer set,
+- backend/admin signature,
+- invoked program IDs,
+- account metas,
+- decoded TxLINE instruction,
+- requested TxL amount.
 
-Do not add transaction signing support until these checks exist.
+## Streams
 
-## Error Handling
-
-- Treat HTTP 401 as an expired or missing guest JWT. Renew the JWT from the same
-  host and retry with the same API token.
-- Treat HTTP 403 as invalid API token, insufficient entitlement, expired
-  subscription, or network mismatch.
-- Do not retry activation blindly after a signature error; rebuild and inspect
-  the signed preimage first.
-- Do not hide proof errors behind generic validation failures. Include
-  non-secret context such as network, fixture ID, sequence, timestamp, and PDA.
+SSE clients send both credentials, preserve `Last-Event-ID`, and renew the guest
+JWT on HTTP 401. HTTP 403 is treated as an entitlement, token, expiry, or network
+mismatch condition.

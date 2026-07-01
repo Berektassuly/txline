@@ -1,24 +1,78 @@
-//! Solana helper module boundaries.
-//!
-//! Planned Solana support covers the on-chain side of TxLINE access:
-//!
-//! - Token-2022 associated token accounts for the user and treasury vaults;
-//! - subscription transactions through `subscribe(serviceLevelId, weeks)`;
-//! - optional purchase quote transactions for paid TxL flows;
-//! - Program Derived Addresses (PDAs) such as `pricing_matrix`,
-//!   `token_treasury_v2`, `daily_scores_roots`, `daily_batch_roots`, and
-//!   `ten_daily_fixtures_roots`;
-//! - transaction safety checks before any SDK-assisted signing.
-//!
-//! The SDK should verify purchase quote transactions locally before signing:
-//! expected fee payer, backend/admin signature where required, allowed program
-//! IDs, expected instruction name, requested amount, and instruction count.
-//!
-//! Free tiers do not require TxL payment, but they still require SOL for normal
-//! Solana fees and possible account rent. This module currently only declares
-//! submodules.
+//! Devnet Solana helpers.
 
 pub mod pda;
 pub mod purchase;
 pub mod subscription;
 pub mod transaction_safety;
+
+use solana_sdk::hash::Hash;
+use solana_sdk::pubkey::Pubkey;
+use solana_sdk::signature::{Signature, Signer};
+use solana_sdk::transaction::Transaction;
+
+use crate::Result;
+use crate::config::TxlineConfig;
+use crate::solana::pda::{DevnetPdas, parse_pubkey};
+use crate::solana::subscription::{
+    build_subscribe_transaction, send_subscribe_transaction, sign_subscribe_transaction,
+};
+
+#[derive(Debug, Clone, Copy)]
+pub struct SolanaClient<'a> {
+    config: &'a TxlineConfig,
+}
+
+impl<'a> SolanaClient<'a> {
+    pub(crate) fn new(config: &'a TxlineConfig) -> Self {
+        Self { config }
+    }
+
+    pub fn program_id(&self) -> Result<Pubkey> {
+        parse_pubkey(&self.config.program_id)
+    }
+
+    pub fn pdas(&self) -> Result<DevnetPdas> {
+        DevnetPdas::new()
+    }
+
+    pub fn build_subscribe_transaction(
+        &self,
+        user: Pubkey,
+        service_level_id: u16,
+        weeks: u8,
+        recent_blockhash: Hash,
+    ) -> Result<Transaction> {
+        build_subscribe_transaction(
+            self.program_id()?,
+            user,
+            service_level_id,
+            weeks,
+            recent_blockhash,
+        )
+    }
+
+    pub fn sign_subscribe_transaction<S: Signer>(
+        &self,
+        signer: &S,
+        service_level_id: u16,
+        weeks: u8,
+        recent_blockhash: Hash,
+    ) -> Result<Transaction> {
+        sign_subscribe_transaction(
+            self.config,
+            signer,
+            service_level_id,
+            weeks,
+            recent_blockhash,
+        )
+    }
+
+    pub fn send_subscribe_transaction<S: Signer>(
+        &self,
+        signer: &S,
+        service_level_id: u16,
+        weeks: u8,
+    ) -> Result<Signature> {
+        send_subscribe_transaction(self.config, signer, service_level_id, weeks)
+    }
+}
