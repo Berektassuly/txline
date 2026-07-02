@@ -21,7 +21,7 @@ separate and reviewable.
 | Credentials | `auth`, `client` | Guest JWTs, API tokens, activation preimages, and redacted headers. |
 | Data access | `http` | Fixtures, odds, scores, purchase quotes, and validation endpoints. |
 | Streams | `stream` | SSE parsing, heartbeat filtering, reconnects, `Last-Event-ID`, and stream-specific JWT refresh on `401`/`403`. |
-| Solana | `solana` | Devnet PDAs, Token-2022 ATA derivation/creation, setup, subscription, purchase, faucet, validation, and coverage helpers. |
+| Solana | `solana` | Devnet PDAs, Token-2022 ATA derivation/creation, setup, subscription, purchase, faucet, validation, low-level trading instruction builders, and coverage helpers. |
 | Validation | `validation` | Proof decoding, Anchor-compatible stat-validation DTOs, payload conversion, and strategies. |
 
 ## Runtime Flows
@@ -79,6 +79,14 @@ the program return data as a boolean. V2 payloads preserve requested stat key
 order and verify returned stat keys by position before exposing validation
 input.
 
+### Trading Builders
+
+Low-level public TxODDS trading builders are available for intents, direct
+trades, matching, settlement, claims, refunds, and audit checks. These builders
+only construct instructions from caller-supplied accounts and parameters. They
+do not derive unverified trading PDAs, manage a market lifecycle, sign
+transactions, or send transactions.
+
 ### Paid Purchase Safety
 
 Purchase quote safety checks decode the returned transaction, verify the fee
@@ -115,6 +123,6 @@ Devnet IDL coverage is tracked in `txline::solana::idl` and summarized in
 - Mainnet RPC support.
 - Secret storage or wallet key management.
 - Admin/root insertion/update flows in casual examples.
-- Trading, settlement, claim, and refund flows that are listed as planned in the
-  coverage matrix.
+- High-level prediction-market lifecycle orchestration for trading, settlement,
+  claims, and refunds.
 - Live Devnet tests as part of the default test suite.
