@@ -2,8 +2,8 @@
   "network": "devnet",
   "source": {
     "repository": "https://github.com/txodds/tx-on-chain",
-    "ref": "8dfc6608252f4034a0279b48578c8fe07b949af0",
-    "commit": "8dfc6608252f4034a0279b48578c8fe07b949af0",
+    "ref": "432b740831c1235ea706784902678381afd241c6",
+    "commit": "432b740831c1235ea706784902678381afd241c6",
     "idlPath": "examples/devnet/idl/txoracle.json",
     "anchorVersion": "0.32.1"
   },

@@ -5,7 +5,7 @@ const path = require("path");
 const { createRequire } = require("module");
 const { execFileSync } = require("child_process");
 
-const PINNED_TX_ON_CHAIN_REF = "8dfc6608252f4034a0279b48578c8fe07b949af0";
+const PINNED_TX_ON_CHAIN_REF = "432b740831c1235ea706784902678381afd241c6";
 const ANCHOR_PACKAGE_NAME = "@coral-xyz/anchor";
 const EXPECTED_ANCHOR_VERSION = "0.32.1";
 

@@ -1,17 +1,15 @@
 # Devnet IDL Coverage
 
 This SDK is Devnet-only. Devnet IDL data comes from upstream
-`documentation/programs/devnet.mdx`, not the upstream top-level
-`idl/txoracle.json`, which currently points at mainnet program
-`9ExbZjAapQww1vfcisDmrngPinHTEfpjYRWMunJgcKaA` version `1.4.7`.
+merged PR #3 source commit `432b740831c1235ea706784902678381afd241c6`,
+specifically `examples/devnet/idl/txoracle.json`. That file identifies Devnet
+program `6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J`, IDL version `1.5.5`,
+and the `validate_stat_v2` instruction.
 
-Current upstream Devnet docs list program
-`6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J` version `1.5.2`. The upstream
-PR examples branch `nojira-re-adding-examples` includes a Devnet IDL copy at
-`examples/devnet/idl/txoracle.json` with the same program ID, version `1.5.5`,
-and `validate_stat_v2`. This SDK implements the PR parity surface pinned to
-commit `8dfc6608252f4034a0279b48578c8fe07b949af0` and documents the remaining
-gaps honestly.
+Do not use the upstream top-level `idl/txoracle.json` as the Devnet SDK source.
+It currently points at MainNet program
+`9ExbZjAapQww1vfcisDmrngPinHTEfpjYRWMunJgcKaA` version `1.5.5`. MainNet
+constants and flows remain intentionally out of scope for this SDK version.
 
 The machine-readable source is `txline::solana::idl::DEVNET_INSTRUCTION_COVERAGE`.
 

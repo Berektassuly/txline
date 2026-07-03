@@ -81,13 +81,17 @@ selection and review. The builders do not validate mints, token programs, vault
 accounts, or PDA derivations, and callers remain responsible for market
 lifecycle orchestration, signing, simulation where appropriate, and sending.
 
+The Devnet V2 score examples include Rust counterparts for the upstream PR #3
+`subscription_scores_1stat.ts`, `subscription_scores_v2.ts`, and
+`subscription_scores_v2a.ts` flows.
+
 ## Documentation
 
 - Repository: <https://github.com/Berektassuly/txline-rs>
 - API docs: <https://docs.rs/txline>
 - TxLINE docs: <https://txline.txodds.com/documentation/quickstart>
 - Devnet IDL docs: <https://github.com/txodds/tx-on-chain/blob/main/documentation/programs/devnet.mdx>
-- Devnet PR examples source: <https://github.com/txodds/tx-on-chain/tree/nojira-re-adding-examples>
+- Devnet PR #3 source commit: <https://github.com/txodds/tx-on-chain/tree/432b740831c1235ea706784902678381afd241c6/examples/devnet>
 
 Normal Rust tests use checked-in validation golden fixtures and do not require
 Node, Anchor, or a local `txodds/tx-on-chain` checkout.

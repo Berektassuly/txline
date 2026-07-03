@@ -411,6 +411,7 @@ fn fixture_validation() -> FixtureValidation {
             participant2: "Beta".to_owned(),
             fixture_id: i64::from(i32::MAX) + 7,
             participant1_is_home: true,
+            game_state: None,
             extra: Default::default(),
         },
         summary: FixtureBatchSummary {

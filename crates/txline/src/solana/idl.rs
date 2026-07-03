@@ -16,8 +16,11 @@ pub struct DevnetInstructionCoverage {
 }
 
 pub const DEVNET_IDL_ADDRESS: &str = "6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J";
-pub const DEVNET_DOCS_IDL_VERSION: &str = "1.5.2";
-pub const DEVNET_PR_IDL_VERSION: &str = "1.5.5";
+pub const DEVNET_EXAMPLES_IDL_VERSION: &str = "1.5.5";
+pub const DEVNET_PR_IDL_VERSION: &str = DEVNET_EXAMPLES_IDL_VERSION;
+pub const DEVNET_PR_IDL_REF: &str = "432b740831c1235ea706784902678381afd241c6";
+#[deprecated(note = "use DEVNET_EXAMPLES_IDL_VERSION for the active Devnet IDL source")]
+pub const DEVNET_DOCS_IDL_VERSION: &str = DEVNET_EXAMPLES_IDL_VERSION;
 
 pub const DEVNET_INSTRUCTION_COVERAGE: &[DevnetInstructionCoverage] = &[
     DevnetInstructionCoverage {

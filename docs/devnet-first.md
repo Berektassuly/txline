@@ -4,18 +4,17 @@ The crate supports TxLINE Devnet only in this implementation phase.
 
 ## IDL Source
 
-Use upstream `documentation/programs/devnet.mdx` as the Devnet IDL source, not
-the top-level upstream `idl/txoracle.json`. The top-level file currently points
-at mainnet address `9ExbZjAapQww1vfcisDmrngPinHTEfpjYRWMunJgcKaA` and version
-`1.4.7`.
+Use the merged upstream PR #3 source commit as the active Devnet IDL source for
+this SDK: `432b740831c1235ea706784902678381afd241c6`. The source file is
+`examples/devnet/idl/txoracle.json`; it identifies Devnet program
+`6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J`, IDL version `1.5.5`, and the
+additional `validate_stat_v2` instruction.
 
-The Devnet docs currently identify program
-`6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J` and IDL version `1.5.2`. The
-upstream PR examples branch `nojira-re-adding-examples` includes a Devnet IDL
-copy at `examples/devnet/idl/txoracle.json` with the same program ID, version
-`1.5.5`, and the additional `validate_stat_v2` instruction. This SDK implements
-the PR parity surface pinned to commit
-`8dfc6608252f4034a0279b48578c8fe07b949af0` while remaining Devnet-only.
+Do not use the top-level upstream `idl/txoracle.json` as the Devnet SDK source.
+It currently points at MainNet address
+`9ExbZjAapQww1vfcisDmrngPinHTEfpjYRWMunJgcKaA` and IDL version `1.5.5`. MainNet
+constants, feature flags, examples, and transaction flows remain out of scope
+for this SDK version.
 
 ## Canonical Values
 

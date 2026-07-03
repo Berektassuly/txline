@@ -153,6 +153,9 @@ cargo run -p txline --example devnet_setup_user
 cargo run -p txline --example devnet_scores_stream
 cargo run -p txline --example devnet_validate_stat
 cargo run -p txline --example devnet_validate_stat_v2
+cargo run -p txline --example devnet_subscription_scores_1stat
+cargo run -p txline --example devnet_subscription_scores_v2
+cargo run -p txline --example devnet_subscription_scores_v2a
 cargo run -p txline --example devnet_validate_fixture
 cargo run -p txline --example devnet_validate_odds
 ```
@@ -215,4 +218,4 @@ CI runs the same checks on pushes to `main` and pull requests, plus an MSRV
 - Streaming docs: <https://txline.txodds.com/documentation/examples/streaming-data>
 - On-chain validation docs: <https://txline.txodds.com/documentation/examples/onchain-validation>
 - Devnet IDL docs: <https://github.com/txodds/tx-on-chain/blob/main/documentation/programs/devnet.mdx>
-- Devnet PR examples source: <https://github.com/txodds/tx-on-chain/tree/nojira-re-adding-examples>
+- Devnet PR #3 source commit: <https://github.com/txodds/tx-on-chain/tree/432b740831c1235ea706784902678381afd241c6/examples/devnet>

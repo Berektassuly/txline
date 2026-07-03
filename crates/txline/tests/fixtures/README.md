@@ -14,12 +14,12 @@ independently verify the golden file.
 The source is Devnet-only and pinned to:
 
 - Repository: `https://github.com/txodds/tx-on-chain`
-- Branch / PR: `nojira-re-adding-examples` / PR #3
-- Commit: `8dfc6608252f4034a0279b48578c8fe07b949af0`
+- Merged PR: #3
+- Source commit: `432b740831c1235ea706784902678381afd241c6`
 - IDL path: `examples/devnet/idl/txoracle.json`
 
-The IDL path above is from the PR #3 branch, not `origin/main`. Do not
-regenerate these fixtures from the upstream main branch.
+The IDL path above is from the pinned PR #3 source commit, not a moving branch
+or `origin/main`. Do not regenerate these fixtures from an unpinned upstream ref.
 
 Expected bytes are generated independently of the Rust encoders with
 `@coral-xyz/anchor`'s `BorshInstructionCoder` and the PR #3 Devnet IDL. Test
@@ -51,7 +51,7 @@ Run from the `txline-rs` repository root:
 
 ```powershell
 $env:TX_ON_CHAIN_ROOT = "<path-to-local-tx-on-chain-checkout>"
-$env:TX_ON_CHAIN_REF = "8dfc6608252f4034a0279b48578c8fe07b949af0"
+$env:TX_ON_CHAIN_REF = "432b740831c1235ea706784902678381afd241c6"
 node crates/txline/tests/fixtures/generate_validation_golden.js --check
 node crates/txline/tests/fixtures/generate_trading_golden.js --check
 ```
@@ -60,7 +60,7 @@ node crates/txline/tests/fixtures/generate_trading_golden.js --check
 
 ```powershell
 $env:TX_ON_CHAIN_ROOT = "<path-to-local-tx-on-chain-checkout>"
-$env:TX_ON_CHAIN_REF = "8dfc6608252f4034a0279b48578c8fe07b949af0"
+$env:TX_ON_CHAIN_REF = "432b740831c1235ea706784902678381afd241c6"
 node crates/txline/tests/fixtures/generate_validation_golden.js
 node crates/txline/tests/fixtures/generate_trading_golden.js
 ```

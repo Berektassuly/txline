@@ -9,6 +9,12 @@ use crate::validation::proof::ProofNode;
 
 pub type ExtraFields = Map<String, Value>;
 
+pub const FIXTURE_GAME_STATE_SCHEDULED: i32 = 1;
+pub const FIXTURE_GAME_STATE_CANCELLED: i32 = 6;
+pub const SCORE_ACTION_GAME_FINALISED: &str = "game_finalised";
+pub const FINAL_SETTLEMENT_STATUS_ID: i32 = 100;
+pub const FINAL_SETTLEMENT_PERIOD: i32 = 100;
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Fixture {
     #[serde(rename = "Ts")]
@@ -33,8 +39,20 @@ pub struct Fixture {
     pub fixture_id: i64,
     #[serde(rename = "Participant1IsHome")]
     pub participant1_is_home: bool,
+    #[serde(default, rename = "GameState")]
+    pub game_state: Option<i32>,
     #[serde(default, flatten)]
     pub extra: ExtraFields,
+}
+
+impl Fixture {
+    pub fn is_scheduled(&self) -> bool {
+        self.game_state == Some(FIXTURE_GAME_STATE_SCHEDULED)
+    }
+
+    pub fn is_cancelled(&self) -> bool {
+        self.game_state == Some(FIXTURE_GAME_STATE_CANCELLED)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -89,6 +107,10 @@ pub struct Scores {
     pub connection_id: i64,
     pub seq: i32,
     #[serde(default)]
+    pub status_id: Option<i32>,
+    #[serde(default)]
+    pub period: Option<i32>,
+    #[serde(default)]
     pub coverage_secondary_data: Option<bool>,
     #[serde(default)]
     pub coverage_type: Option<String>,
@@ -102,6 +124,14 @@ pub struct Scores {
     pub stats: Option<BTreeMap<String, i32>>,
     #[serde(default, flatten)]
     pub extra: ExtraFields,
+}
+
+impl Scores {
+    pub fn is_final_outcome_record(&self) -> bool {
+        self.action == SCORE_ACTION_GAME_FINALISED
+            && self.status_id == Some(FINAL_SETTLEMENT_STATUS_ID)
+            && self.period == Some(FINAL_SETTLEMENT_PERIOD)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -183,4 +213,65 @@ pub struct PurchaseQuoteResponse {
     pub base_usdt_cost: f64,
     pub fee_usdt_amount: f64,
     pub total_usdt_charged: f64,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn fixture_deserializes_game_state() {
+        let fixture = serde_json::from_str::<Fixture>(
+            r#"{
+                "Ts": 1781123456789,
+                "StartTime": 1781129999999,
+                "Competition": "Cup",
+                "CompetitionId": 10,
+                "FixtureGroupId": 20,
+                "Participant1Id": 30,
+                "Participant1": "Home",
+                "Participant2Id": 40,
+                "Participant2": "Away",
+                "FixtureId": 17952170,
+                "Participant1IsHome": true,
+                "GameState": 6
+            }"#,
+        )
+        .unwrap();
+
+        assert_eq!(fixture.game_state, Some(FIXTURE_GAME_STATE_CANCELLED));
+        assert!(fixture.is_cancelled());
+        assert!(!fixture.is_scheduled());
+    }
+
+    #[test]
+    fn scores_deserializes_final_settlement_markers() {
+        let score = serde_json::from_str::<Scores>(
+            r#"{
+                "fixtureId": 17952170,
+                "gameState": "final",
+                "startTime": 1781129999999,
+                "isTeam": true,
+                "fixtureGroupId": 20,
+                "competitionId": 10,
+                "countryId": 1,
+                "sportId": 1,
+                "participant1IsHome": true,
+                "participant2Id": 40,
+                "participant1Id": 30,
+                "action": "game_finalised",
+                "id": 99,
+                "ts": 1781130000000,
+                "connectionId": 77,
+                "seq": 941,
+                "statusId": 100,
+                "period": 100
+            }"#,
+        )
+        .unwrap();
+
+        assert_eq!(score.status_id, Some(FINAL_SETTLEMENT_STATUS_ID));
+        assert_eq!(score.period, Some(FINAL_SETTLEMENT_PERIOD));
+        assert!(score.is_final_outcome_record());
+    }
 }

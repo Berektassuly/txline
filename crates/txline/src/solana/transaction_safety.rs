@@ -333,10 +333,24 @@ fn signer_signature_present(transaction: &VersionedTransaction, signer: &Pubkey)
             "expected backend signer account is not marked as a signer",
         ));
     }
-    Ok(transaction
+    let present = transaction
         .signatures
         .get(signer_index)
-        .is_some_and(|signature| *signature != Signature::default()))
+        .is_some_and(|signature| *signature != Signature::default());
+    if !present {
+        return Ok(false);
+    }
+    let verified = transaction
+        .verify_with_results()
+        .get(signer_index)
+        .copied()
+        .unwrap_or(false);
+    if !verified {
+        return Err(TxlineError::solana(
+            "expected backend signer signature does not verify",
+        ));
+    }
+    Ok(true)
 }
 
 fn reject_unexpected_buyer_signer(
@@ -441,13 +455,20 @@ mod tests {
     use super::*;
     use crate::config::DEVNET_PROGRAM_ID;
     use crate::solana::purchase::{
-        devnet_purchase_subscription_token_usdt_accounts,
+        PurchaseSubscriptionTokenUsdtAccounts, devnet_purchase_subscription_token_usdt_accounts,
         purchase_subscription_token_usdt_instruction,
     };
     use solana_sdk::hash::Hash;
     use solana_sdk::instruction::Instruction;
+    use solana_sdk::message::{VersionedMessage, v0};
     use solana_sdk::signature::{Keypair, Signer};
     use solana_sdk::transaction::Transaction;
+
+    type PurchaseAccountMutation = (
+        &'static str,
+        fn(&mut PurchaseSubscriptionTokenUsdtAccounts),
+        &'static str,
+    );
 
     #[test]
     fn accepts_synthetic_devnet_purchase_transaction() {
@@ -543,6 +564,130 @@ mod tests {
     }
 
     #[test]
+    fn rejects_backend_signature_that_does_not_verify() {
+        let buyer = Keypair::new();
+        let backend = Keypair::new();
+        let mut transaction = signed_purchase_transaction(&buyer, &backend, 1_000, Vec::new());
+        let config = safety_config(&buyer, &backend, 1_000);
+        transaction.signatures[1] = Signature::new_unique();
+
+        let err = verify_purchase_transaction(&transaction, &config).unwrap_err();
+
+        assert!(err.to_string().contains("does not verify"));
+    }
+
+    #[test]
+    fn rejects_missing_backend_signature_slot() {
+        let buyer = Keypair::new();
+        let backend = Keypair::new();
+        let mut transaction = signed_purchase_transaction(&buyer, &backend, 1_000, Vec::new());
+        let config = safety_config(&buyer, &backend, 1_000);
+        transaction.signatures[1] = Signature::default();
+
+        let err = verify_purchase_transaction(&transaction, &config).unwrap_err();
+
+        assert!(
+            err.to_string()
+                .contains("missing the expected backend signer")
+        );
+    }
+
+    #[test]
+    fn rejects_backend_account_not_marked_as_signer() {
+        let buyer = Keypair::new();
+        let backend = Keypair::new();
+        let transaction = signed_purchase_transaction_with_instruction_mutation(
+            &buyer,
+            &backend,
+            1_000,
+            |instruction| instruction.accounts[1].is_signer = false,
+        );
+        let config = safety_config(&buyer, &backend, 1_000);
+
+        let err = verify_purchase_transaction(&transaction, &config).unwrap_err();
+
+        assert!(err.to_string().contains("not marked as a signer"));
+    }
+
+    #[test]
+    fn rejects_purchase_account_identity_mutations() {
+        let cases: [PurchaseAccountMutation; 6] = [
+            (
+                "wrong USDT mint",
+                |accounts: &mut PurchaseSubscriptionTokenUsdtAccounts| {
+                    accounts.usdt_mint = Pubkey::new_unique()
+                },
+                "account 2",
+            ),
+            (
+                "fake buyer USDT ATA",
+                |accounts: &mut PurchaseSubscriptionTokenUsdtAccounts| {
+                    accounts.buyer_usdt_account = Pubkey::new_unique()
+                },
+                "account 3",
+            ),
+            (
+                "swapped vaults",
+                |accounts: &mut PurchaseSubscriptionTokenUsdtAccounts| {
+                    std::mem::swap(
+                        &mut accounts.usdt_treasury_vault,
+                        &mut accounts.token_treasury_vault,
+                    )
+                },
+                "account 4",
+            ),
+            (
+                "substituted treasury PDA",
+                |accounts: &mut PurchaseSubscriptionTokenUsdtAccounts| {
+                    accounts.token_treasury_pda = Pubkey::new_unique()
+                },
+                "account 8",
+            ),
+            (
+                "wrong legacy token program",
+                |accounts: &mut PurchaseSubscriptionTokenUsdtAccounts| {
+                    accounts.token_program = Pubkey::new_unique()
+                },
+                "account 10",
+            ),
+            (
+                "wrong Token-2022 program",
+                |accounts: &mut PurchaseSubscriptionTokenUsdtAccounts| {
+                    accounts.token_2022_program = Pubkey::new_unique()
+                },
+                "account 11",
+            ),
+        ];
+        for case in cases {
+            let buyer = Keypair::new();
+            let backend = Keypair::new();
+            let transaction = signed_mutated_purchase_transaction(&buyer, &backend, 1_000, case.1);
+            let config = safety_config(&buyer, &backend, 1_000);
+
+            let err = verify_purchase_transaction(&transaction, &config).unwrap_err();
+
+            assert!(
+                err.to_string().contains(case.2),
+                "{} error should mention {} but was: {err}",
+                case.0,
+                case.2
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_purchase_transactions_with_address_table_lookups() {
+        let buyer = Keypair::new();
+        let backend = Keypair::new();
+        let transaction = signed_purchase_v0_transaction_with_lookup(&buyer, &backend, 1_000);
+        let config = safety_config(&buyer, &backend, 1_000);
+
+        let err = verify_purchase_transaction(&transaction, &config).unwrap_err();
+
+        assert!(err.to_string().contains("address table lookups"));
+    }
+
+    #[test]
     fn rejects_unknown_program_invocation() {
         let buyer = Keypair::new();
         let backend = Keypair::new();
@@ -608,6 +753,68 @@ mod tests {
         let mut transaction = Transaction::new_with_payer(&instructions, Some(&buyer.pubkey()));
         transaction.sign(&[buyer, backend], blockhash);
         VersionedTransaction::from(transaction)
+    }
+
+    fn signed_purchase_transaction_with_instruction_mutation(
+        buyer: &Keypair,
+        backend: &Keypair,
+        amount: u64,
+        mutate_instruction: impl FnOnce(&mut Instruction),
+    ) -> VersionedTransaction {
+        let program_id = parse_pubkey(DEVNET_PROGRAM_ID).unwrap();
+        let accounts =
+            devnet_purchase_subscription_token_usdt_accounts(buyer.pubkey(), backend.pubkey())
+                .unwrap();
+        let mut purchase_ix =
+            purchase_subscription_token_usdt_instruction(program_id, accounts, amount).unwrap();
+        mutate_instruction(&mut purchase_ix);
+        let blockhash = Hash::new_unique();
+        let mut transaction = Transaction::new_with_payer(&[purchase_ix], Some(&buyer.pubkey()));
+        transaction.sign(&[buyer], blockhash);
+        VersionedTransaction::from(transaction)
+    }
+
+    fn signed_mutated_purchase_transaction(
+        buyer: &Keypair,
+        backend: &Keypair,
+        amount: u64,
+        mutate_accounts: impl FnOnce(&mut PurchaseSubscriptionTokenUsdtAccounts),
+    ) -> VersionedTransaction {
+        let program_id = parse_pubkey(DEVNET_PROGRAM_ID).unwrap();
+        let mut accounts =
+            devnet_purchase_subscription_token_usdt_accounts(buyer.pubkey(), backend.pubkey())
+                .unwrap();
+        mutate_accounts(&mut accounts);
+        let purchase_ix =
+            purchase_subscription_token_usdt_instruction(program_id, accounts, amount).unwrap();
+        let blockhash = Hash::new_unique();
+        let mut transaction = Transaction::new_with_payer(&[purchase_ix], Some(&buyer.pubkey()));
+        transaction.sign(&[buyer, backend], blockhash);
+        VersionedTransaction::from(transaction)
+    }
+
+    fn signed_purchase_v0_transaction_with_lookup(
+        buyer: &Keypair,
+        backend: &Keypair,
+        amount: u64,
+    ) -> VersionedTransaction {
+        let program_id = parse_pubkey(DEVNET_PROGRAM_ID).unwrap();
+        let accounts =
+            devnet_purchase_subscription_token_usdt_accounts(buyer.pubkey(), backend.pubkey())
+                .unwrap();
+        let purchase_ix =
+            purchase_subscription_token_usdt_instruction(program_id, accounts, amount).unwrap();
+        let mut message =
+            v0::Message::try_compile(&buyer.pubkey(), &[purchase_ix], &[], Hash::new_unique())
+                .unwrap();
+        message
+            .address_table_lookups
+            .push(v0::MessageAddressTableLookup {
+                account_key: Pubkey::new_unique(),
+                writable_indexes: Vec::new(),
+                readonly_indexes: vec![0],
+            });
+        VersionedTransaction::try_new(VersionedMessage::V0(message), &[buyer, backend]).unwrap()
     }
 
     fn quote_response(transaction: &VersionedTransaction) -> PurchaseQuoteResponse {

@@ -75,9 +75,17 @@ TXLINE_VALIDATE_ON_CHAIN=1
 TXLINE_WALLET=/path/to/devnet-wallet.json
 cargo run -p txline --example devnet_validate_stat
 cargo run -p txline --example devnet_validate_stat_v2
+cargo run -p txline --example devnet_subscription_scores_1stat
+cargo run -p txline --example devnet_subscription_scores_v2
+cargo run -p txline --example devnet_subscription_scores_v2a
 cargo run -p txline --example devnet_validate_fixture
 cargo run -p txline --example devnet_validate_odds
 ```
+
+The `devnet_subscription_scores_*` examples mirror the upstream PR #3
+`subscription_scores_1stat.ts`, `subscription_scores_v2.ts`, and
+`subscription_scores_v2a.ts` flows while keeping Rust credentials and live
+simulation gated by environment variables.
 
 Default tests cover deterministic instruction encoding and payload behavior, but
 do not require live Devnet availability.
@@ -88,7 +96,7 @@ Rust tests with `include_str!`. Normal Rust tests do not require Node, Anchor, o
 a local `txodds/tx-on-chain` checkout. Those tools are only needed to regenerate
 or independently verify the golden file, using the fixture README workflow and
 the PR #3 Devnet IDL pinned to commit
-`8dfc6608252f4034a0279b48578c8fe07b949af0`.
+`432b740831c1235ea706784902678381afd241c6`.
 
 ## Sequence Source
 

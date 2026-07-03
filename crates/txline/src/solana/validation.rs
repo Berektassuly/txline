@@ -502,6 +502,7 @@ mod tests {
                 participant2: "B".to_owned(),
                 fixture_id: 5,
                 participant1_is_home: true,
+                game_state: None,
                 extra: Default::default(),
             },
             summary: FixtureBatchSummary {
