@@ -25,12 +25,12 @@ model.
 
 ## SDK Packages
 
-| Package | Path | Audience | Checks |
-| --- | --- | --- | --- |
-| Rust crate | [`crates/txline`](crates/txline) | Rust services, CLIs, and validation tooling | `cargo fmt`, `cargo clippy`, `cargo test` |
-| Go module | [`go`](go) | Backend services, bots, indexers, and workers | `go test ./...`, `go vet ./...` |
-| Python package | [`python`](python) | Bots, analytics, scripts, and services | `pytest`, `ruff`, `mypy`, `build` |
-| TypeScript package | [`typescript`](typescript) | TypeScript/JavaScript apps and services | `npm run typecheck`, `npm test`, `npm run build` |
+| Package | Published SDK | Path | Audience | Checks |
+| --- | --- | --- | --- | --- |
+| Rust crate | [`txline`](https://crates.io/crates/txline) | [`crates/txline`](crates/txline) | Rust services, CLIs, and validation tooling | `cargo fmt`, `cargo clippy`, `cargo test` |
+| Go module | [`github.com/Berektassuly/txline/go/txline`](https://pkg.go.dev/github.com/Berektassuly/txline/go/txline) | [`go`](go) | Backend services, bots, indexers, and workers | `go test ./...`, `go vet ./...` |
+| Python package | [`txline`](https://pypi.org/project/txline/) | [`python`](python) | Bots, analytics, scripts, and services | `pytest`, `ruff`, `mypy`, `build` |
+| TypeScript package | [`@beriktassuly/txline`](https://www.npmjs.com/package/@beriktassuly/txline) | [`typescript`](typescript) | TypeScript/JavaScript apps and services | `npm run typecheck`, `npm test`, `npm run build` |
 
 The SDKs currently include:
 

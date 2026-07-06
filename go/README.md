@@ -6,6 +6,16 @@ This module is Devnet-first. Mainnet addresses are documented in public TxLINE d
 
 ## Install
 
+Published package docs: <https://pkg.go.dev/github.com/Berektassuly/txline/go/txline>
+
+Add the SDK to a Go module:
+
+```bash
+go get github.com/Berektassuly/txline/go/txline@v0.3.5
+```
+
+Develop from this repository:
+
 ```bash
 cd go
 go mod tidy

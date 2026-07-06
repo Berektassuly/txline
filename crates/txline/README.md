@@ -30,6 +30,8 @@ Solana program addresses:
   V2 stats.
 - Paid purchase quote transaction safety checks.
 
+Published crate: <https://crates.io/crates/txline>
+
 For paid purchase signing flows, use `TxlineClient::purchase_quote_checked`.
 It requires the expected backend signer and returns transaction bytes only after
 SDK safety validation succeeds.
@@ -91,6 +93,7 @@ The Devnet V2 score examples include Rust counterparts for the upstream PR #3
 ## Documentation
 
 - Repository: <https://github.com/Berektassuly/txline>
+- Published crate: <https://crates.io/crates/txline>
 - API docs: <https://docs.rs/txline>
 - TxLINE docs: <https://txline.txodds.com/documentation/quickstart>
 - Devnet IDL docs: <https://github.com/txodds/tx-on-chain/blob/main/documentation/programs/devnet.mdx>

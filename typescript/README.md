@@ -6,6 +6,16 @@ This package is Devnet-first. Mainnet addresses are exposed only as verified ref
 
 ## Install And Develop
 
+Published package: <https://www.npmjs.com/package/@beriktassuly/txline>
+
+Install from npm:
+
+```bash
+npm install @beriktassuly/txline
+```
+
+Develop from this repository:
+
 ```bash
 npm install
 npm run typecheck

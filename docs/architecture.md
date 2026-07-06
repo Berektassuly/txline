@@ -113,12 +113,12 @@ accessor.
 
 ## Workspace Packages
 
-| Package | Path | Notes |
-| --- | --- | --- |
-| Rust | `crates/txline` | Reference implementation and golden fixture source. |
-| Go | `go` | Backend-friendly module with context-aware REST/SSE methods. |
-| Python | `python` | Sync and async clients plus small Solana primitives. |
-| TypeScript | `typescript` | ESM TypeScript package usable from JavaScript. |
+| Package | Published SDK | Path | Notes |
+| --- | --- | --- | --- |
+| Rust | [`txline`](https://crates.io/crates/txline) | `crates/txline` | Reference implementation and golden fixture source. |
+| Go | [`github.com/Berektassuly/txline/go/txline`](https://pkg.go.dev/github.com/Berektassuly/txline/go/txline) | `go` | Backend-friendly module with context-aware REST/SSE methods. |
+| Python | [`txline`](https://pypi.org/project/txline/) | `python` | Sync and async clients plus small Solana primitives. |
+| TypeScript | [`@beriktassuly/txline`](https://www.npmjs.com/package/@beriktassuly/txline) | `typescript` | ESM TypeScript package usable from JavaScript. |
 
 ## Public Surface
 

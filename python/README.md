@@ -9,6 +9,16 @@ Solana instruction builders, and checked purchase quote transaction bytes.
 
 ## Development
 
+Published package: <https://pypi.org/project/txline/>
+
+Install from PyPI:
+
+```bash
+python -m pip install txline
+```
+
+Develop from this repository:
+
 ```bash
 cd python
 python -m pip install -e ".[dev]"

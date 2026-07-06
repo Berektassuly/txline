@@ -29,6 +29,15 @@ Leave a package version input blank to skip that package.
 The workflow validates that requested registry versions match checked-in package
 metadata before publishing.
 
+## Published SDK Links
+
+| Platform | Package | Link |
+| --- | --- | --- |
+| Rust | `txline` | <https://crates.io/crates/txline> |
+| Python | `txline` | <https://pypi.org/project/txline/> |
+| TypeScript | `@beriktassuly/txline` | <https://www.npmjs.com/package/@beriktassuly/txline> |
+| Go | `github.com/Berektassuly/txline/go/txline` | <https://pkg.go.dev/github.com/Berektassuly/txline/go/txline> |
+
 ## One-Time GitHub Setup
 
 Create a repository environment named `release`:
@@ -43,7 +52,7 @@ on registries that use OIDC.
 
 ## PyPI
 
-Package: `@beriktassuly/txline`
+Package: `txline`
 
 PyPI supports pending trusted publishers, so the first Python package release can
 be published from CI without a local API token.
@@ -85,7 +94,7 @@ crates.io token, and runs `cargo publish -p txline`.
 
 ## npm
 
-Package: `txline`
+Package: `@beriktassuly/txline`
 
 The package metadata includes the GitHub repository URL required by npm trusted
 publishing. npm trusted publishing requires Node `22.14.0` or newer and npm
