@@ -18,7 +18,7 @@ The package uses npm and a checked-in `package-lock.json` for deterministic Node
 ## Quick Start
 
 ```ts
-import { TxlineClient, devnetConfig } from "txline-sdk";
+import { TxlineClient, devnetConfig } from "@beriktassuly/txline";
 
 const client = new TxlineClient({ config: devnetConfig() });
 
@@ -77,7 +77,7 @@ import {
   strategyBuilder,
   traderPredicate,
   validateStatV2Instruction,
-} from "txline-sdk";
+} from "@beriktassuly/txline";
 
 const strategy = strategyBuilder(validation.statsToProve().length)
   .single(0, traderPredicate(1, comparison.greaterThan()))
@@ -100,7 +100,7 @@ import {
   DEVNET_PROGRAM_ID,
   devnetSubscribeAccounts,
   subscribeInstruction,
-} from "txline-sdk";
+} from "@beriktassuly/txline";
 
 const accounts = await devnetSubscribeAccounts(userAddress);
 const ix = subscribeInstruction(DEVNET_PROGRAM_ID, accounts, {
