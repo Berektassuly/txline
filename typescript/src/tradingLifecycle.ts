@@ -32,10 +32,7 @@ import {
   type SettleTradeParams,
 } from "./solana/trading.js";
 import type { AddressLike, TxlineInstruction } from "./solana/types.js";
-import {
-  devnetValidateStatV2Instruction,
-  validateStatV2Instruction,
-} from "./solana/validation.js";
+import { devnetValidateStatV2Instruction, validateStatV2Instruction } from "./solana/validation.js";
 import type { FixtureSummaryInput, StatTermInput } from "./validation/legacy.js";
 import type { ProofNode } from "./validation/proof.js";
 import {
@@ -47,10 +44,7 @@ import {
   type NDimensionalStrategy,
   type TraderPredicate,
 } from "./validation/strategy.js";
-import {
-  ScoresStatValidationV2,
-  type StatValidationInput,
-} from "./validation/v2.js";
+import type { ScoresStatValidationV2, StatValidationInput } from "./validation/v2.js";
 
 export const FINAL_OUTCOME_ACTION = "game_finalised";
 export const FINAL_OUTCOME_STATUS_ID = 100;
@@ -175,14 +169,8 @@ export function extractFinalOutcome(
   if (!Number.isInteger(score.seq) || score.seq <= 0) {
     throw new InvalidInputError("final outcome seq must be positive");
   }
-  const participant1Score = scoreStatValue(
-    score,
-    config.participant1GoalsStatKey,
-  );
-  const participant2Score = scoreStatValue(
-    score,
-    config.participant2GoalsStatKey,
-  );
+  const participant1Score = scoreStatValue(score, config.participant1GoalsStatKey);
+  const participant2Score = scoreStatValue(score, config.participant2GoalsStatKey);
   const side: MarketSide =
     participant1Score > participant2Score
       ? "participant1"
@@ -214,17 +202,12 @@ export function findFinalOutcome(
 export function finalOutcomeStatKeys(
   config: FinalOutcomeConfig = defaultSoccerFinalOutcomeConfig(),
 ): readonly number[] {
-  return [
-    config.participant1GoalsStatKey,
-    config.participant2GoalsStatKey,
-  ];
+  return [config.participant1GoalsStatKey, config.participant2GoalsStatKey];
 }
 
 export function scoreMarketStatKeys(terms: ScoreMarketTerms): readonly number[] {
   validateScoreMarketTerms(terms);
-  return terms.statBKey === undefined
-    ? [terms.statAKey]
-    : [terms.statAKey, terms.statBKey];
+  return terms.statBKey === undefined ? [terms.statAKey] : [terms.statAKey, terms.statBKey];
 }
 
 export function finalOutcomeMarketTerms(
@@ -303,12 +286,8 @@ export function spreadMarketTerms(
     fixtureId,
     kind: "spread",
     period: config.period,
-    statAKey: participant1Side
-      ? config.participant1GoalsStatKey
-      : config.participant2GoalsStatKey,
-    statBKey: participant1Side
-      ? config.participant2GoalsStatKey
-      : config.participant1GoalsStatKey,
+    statAKey: participant1Side ? config.participant1GoalsStatKey : config.participant2GoalsStatKey,
+    statBKey: participant1Side ? config.participant2GoalsStatKey : config.participant1GoalsStatKey,
     predicate,
     op: binaryExpression.subtract(),
     negation: false,
@@ -333,37 +312,20 @@ export function marketIntentParamsFromScoreMarketTerms(
 export function finalOutcomeSideStrategy(side: MarketSide): NDimensionalStrategy {
   if (side === "participant1") {
     return strategyBuilder(2)
-      .binary(
-        0,
-        1,
-        binaryExpression.subtract(),
-        traderPredicate(0, comparison.greaterThan()),
-      )
+      .binary(0, 1, binaryExpression.subtract(), traderPredicate(0, comparison.greaterThan()))
       .build();
   }
   if (side === "participant2") {
     return strategyBuilder(2)
-      .binary(
-        1,
-        0,
-        binaryExpression.subtract(),
-        traderPredicate(0, comparison.greaterThan()),
-      )
+      .binary(1, 0, binaryExpression.subtract(), traderPredicate(0, comparison.greaterThan()))
       .build();
   }
   return strategyBuilder(2)
-    .binary(
-      0,
-      1,
-      binaryExpression.subtract(),
-      traderPredicate(0, comparison.equalTo()),
-    )
+    .binary(0, 1, binaryExpression.subtract(), traderPredicate(0, comparison.equalTo()))
     .build();
 }
 
-export function finalOutcomeStrategy(
-  outcome: FinalOutcome,
-): NDimensionalStrategy {
+export function finalOutcomeStrategy(outcome: FinalOutcome): NDimensionalStrategy {
   return finalOutcomeSideStrategy(outcome.side);
 }
 
@@ -395,9 +357,7 @@ export function validationInputForMarket(
 ): StatValidationInput {
   validateScoreMarketTerms(terms);
   const requested = validation.requestedStatKeys();
-  const missing = scoreMarketStatKeys(terms).filter(
-    (statKey) => !requested.includes(statKey),
-  );
+  const missing = scoreMarketStatKeys(terms).filter((statKey) => !requested.includes(statKey));
   if (missing.length > 0) {
     throw new ValidationPayloadError(
       `V2 validation payload is missing market stat keys ${missing.join(",")}`,
@@ -532,11 +492,9 @@ export function closeIntentPlan(
   programId: AddressLike,
   accounts: CloseIntentAccounts,
 ): LifecyclePlan {
-  return singleInstructionPlan(
-    "close_intent",
-    closeIntentInstruction(programId, accounts),
-    ["the authority signs and submits the close instruction for the explicit intent account"],
-  );
+  return singleInstructionPlan("close_intent", closeIntentInstruction(programId, accounts), [
+    "the authority signs and submits the close instruction for the explicit intent account",
+  ]);
 }
 
 export function createTradePlan(
@@ -577,11 +535,7 @@ export function settleTradePlan(
   accounts: SettleTradeAccounts,
   options: SettlementPlanOptions,
 ): LifecyclePlan {
-  const params = settleTradeParamsFromV2(
-    options.tradeId,
-    options.validationInput,
-    options.terms,
-  );
+  const params = settleTradeParamsFromV2(options.tradeId, options.validationInput, options.terms);
   return singleInstructionPlan(
     "settle_trade",
     settleTradeInstruction(programId, accounts, params),
@@ -648,11 +602,9 @@ export function refundBatchPlan(
   programId: AddressLike,
   accounts: RefundBatchAccounts,
 ): LifecyclePlan {
-  return singleInstructionPlan(
-    "refund_batch",
-    refundBatchInstruction(programId, accounts),
-    ["the payer signs the refund instruction for the caller-supplied token accounts"],
-  );
+  return singleInstructionPlan("refund_batch", refundBatchInstruction(programId, accounts), [
+    "the payer signs the refund instruction for the caller-supplied token accounts",
+  ]);
 }
 
 export function auditTradeResultPlan(
@@ -660,10 +612,7 @@ export function auditTradeResultPlan(
   accounts: AuditTradeResultAccounts,
   options: AuditTradeResultPlanOptions,
 ): LifecyclePlan {
-  const params = auditTradeResultParamsFromV2(
-    options.validationInput,
-    options.terms,
-  );
+  const params = auditTradeResultParamsFromV2(options.validationInput, options.terms);
   return singleInstructionPlan(
     "audit_trade_result",
     auditTradeResultInstruction(programId, accounts, params),
@@ -677,9 +626,7 @@ export function settleTradeParamsFromV2(
   terms: ScoreMarketTerms,
 ): SettleTradeParams {
   if (terms.negation) {
-    throw new ValidationPayloadError(
-      "direct trade settlement params do not carry market negation",
-    );
+    throw new ValidationPayloadError("direct trade settlement params do not carry market negation");
   }
   const settlement = settlementInputsFromV2(validationInput, terms);
   return {
@@ -753,16 +700,11 @@ function validateScoreMarketTerms(terms: ScoreMarketTerms): void {
     validateU32(terms.statBKey, "statBKey");
   }
   if ((terms.statBKey === undefined) !== (terms.op === undefined)) {
-    throw new InvalidInputError(
-      "statBKey and op must either both be set or both be absent",
-    );
+    throw new InvalidInputError("statBKey and op must either both be set or both be absent");
   }
 }
 
-function validateFinalOutcomePayload(
-  outcome: FinalOutcome,
-  payload: StatValidationInput,
-): void {
+function validateFinalOutcomePayload(outcome: FinalOutcome, payload: StatValidationInput): void {
   if (payload.fixtureSummary.fixtureId !== outcome.fixtureId) {
     throw new ValidationPayloadError(
       `final outcome proof fixtureId ${payload.fixtureSummary.fixtureId} does not match outcome fixtureId ${outcome.fixtureId}`,
@@ -788,9 +730,7 @@ function validateFinalOutcomePayload(
   expected.forEach((expectedStat, index) => {
     const actual = payload.stats[index]?.stat;
     if (!actual) {
-      throw new ValidationPayloadError(
-        `final outcome proof is missing stat ${index}`,
-      );
+      throw new ValidationPayloadError(`final outcome proof is missing stat ${index}`);
     }
     if (actual.key !== expectedStat.key) {
       throw new ValidationPayloadError(
@@ -817,14 +757,10 @@ function statTermFromPayload(
 ): StatTermInput {
   const matches = payload.stats.filter((leaf) => leaf.stat.key === statKey);
   if (matches.length === 0) {
-    throw new ValidationPayloadError(
-      `validation payload does not contain stat key ${statKey}`,
-    );
+    throw new ValidationPayloadError(`validation payload does not contain stat key ${statKey}`);
   }
   if (matches.length > 1) {
-    throw new ValidationPayloadError(
-      `validation payload contains duplicate stat key ${statKey}`,
-    );
+    throw new ValidationPayloadError(`validation payload contains duplicate stat key ${statKey}`);
   }
   const leaf = matches[0]!;
   if (leaf.stat.period !== expectedPeriod) {
@@ -846,14 +782,10 @@ function scoreStatValue(score: Scores, statKey: number): number {
   }
   const value = stats[String(statKey)];
   if (value === undefined) {
-    throw new InvalidInputError(
-      `final outcome score record is missing stat key ${statKey}`,
-    );
+    throw new InvalidInputError(`final outcome score record is missing stat key ${statKey}`);
   }
   if (!Number.isFinite(value)) {
-    throw new InvalidInputError(
-      `final outcome score stat key ${statKey} is not a finite number`,
-    );
+    throw new InvalidInputError(`final outcome score stat key ${statKey} is not a finite number`);
   }
   return value;
 }
@@ -864,19 +796,14 @@ function bytesFromTermsHash(value: TermsHashLike): Uint8Array {
   }
   const bytes = Array.from(value, (byte, index) => {
     if (!Number.isInteger(byte) || byte < 0 || byte > 255) {
-      throw new InvalidInputError(
-        `terms_hash byte ${index} must be an integer in 0..=255`,
-      );
+      throw new InvalidInputError(`terms_hash byte ${index} must be an integer in 0..=255`);
     }
     return byte;
   });
   return Uint8Array.from(bytes);
 }
 
-function indexOfStatKey(
-  requestedStatKeys: readonly number[],
-  statKey: number,
-): number {
+function indexOfStatKey(requestedStatKeys: readonly number[], statKey: number): number {
   const index = requestedStatKeys.indexOf(statKey);
   if (index === -1) {
     throw new ValidationPayloadError(
@@ -886,10 +813,7 @@ function indexOfStatKey(
   return index;
 }
 
-function sameNumberSequence(
-  left: readonly number[],
-  right: readonly number[],
-): boolean {
+function sameNumberSequence(left: readonly number[], right: readonly number[]): boolean {
   return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 

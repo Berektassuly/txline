@@ -13,8 +13,7 @@ export interface NormalizedProofNode {
 }
 
 export function decodeHash32(value: Hash32Like): Uint8Array {
-  const bytes =
-    typeof value === "string" ? decodeHashString(value) : Uint8Array.from(value);
+  const bytes = typeof value === "string" ? decodeHashString(value) : Uint8Array.from(value);
   if (bytes.length !== 32) {
     throw new ProofDecodeError(`expected 32 bytes, received ${bytes.length}`);
   }
@@ -57,10 +56,7 @@ export function decodeHex(value: string): Uint8Array {
 
 export function decodeBase64(value: string): Uint8Array {
   const normalized = value.replace(/-/gu, "+").replace(/_/gu, "/");
-  const padded = normalized.padEnd(
-    normalized.length + ((4 - (normalized.length % 4)) % 4),
-    "=",
-  );
+  const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=");
   try {
     const binary = globalThis.atob(padded);
     return Uint8Array.from(binary, (char) => char.charCodeAt(0));

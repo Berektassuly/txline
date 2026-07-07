@@ -6,8 +6,7 @@ export type Comparison =
   | { readonly equalTo: Record<string, never> };
 
 export type BinaryExpression =
-  | { readonly add: Record<string, never> }
-  | { readonly subtract: Record<string, never> };
+  { readonly add: Record<string, never> } | { readonly subtract: Record<string, never> };
 
 export interface TraderPredicate {
   readonly threshold: number;
@@ -52,10 +51,7 @@ export const binaryExpression = Object.freeze({
   subtract: (): BinaryExpression => ({ subtract: {} }),
 });
 
-export function traderPredicate(
-  threshold: number,
-  comparisonValue: Comparison,
-): TraderPredicate {
+export function traderPredicate(threshold: number, comparisonValue: Comparison): TraderPredicate {
   return { threshold, comparison: comparisonValue };
 }
 
@@ -78,12 +74,7 @@ export class StrategyBuilder {
     return this;
   }
 
-  binary(
-    indexA: number,
-    indexB: number,
-    op: BinaryExpression,
-    predicate: TraderPredicate,
-  ): this {
+  binary(indexA: number, indexB: number, op: BinaryExpression, predicate: TraderPredicate): this {
     ensureIndex(indexA, this.#statCount);
     ensureIndex(indexB, this.#statCount);
     this.#discretePredicates.push({
@@ -106,9 +97,7 @@ export class StrategyBuilder {
   build(): NDimensionalStrategy {
     const strategy: NDimensionalStrategy = {
       geometricTargets: [...this.#geometricTargets],
-      ...(this.#distancePredicate
-        ? { distancePredicate: this.#distancePredicate }
-        : {}),
+      ...(this.#distancePredicate ? { distancePredicate: this.#distancePredicate } : {}),
       discretePredicates: [...this.#discretePredicates],
     };
     validateStrategyIndices(strategy, this.#statCount);
@@ -120,10 +109,7 @@ export function strategyBuilder(statCount: number): StrategyBuilder {
   return new StrategyBuilder(statCount);
 }
 
-export function validateStrategyIndices(
-  strategy: NDimensionalStrategy,
-  statCount: number,
-): void {
+export function validateStrategyIndices(strategy: NDimensionalStrategy, statCount: number): void {
   for (const target of strategy.geometricTargets) {
     ensureIndex(target.statIndex, statCount);
   }
@@ -136,9 +122,7 @@ export function validateStrategyIndices(
     }
   }
   if (strategy.geometricTargets.length > 0 && !strategy.distancePredicate) {
-    throw new ValidationPayloadError(
-      "geometric targets require a distance predicate",
-    );
+    throw new ValidationPayloadError("geometric targets require a distance predicate");
   }
 }
 

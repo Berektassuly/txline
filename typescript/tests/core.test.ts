@@ -35,9 +35,7 @@ describe("config", () => {
     expect(config.network).toBe("devnet");
     expect(config.programId).toBe("6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J");
 
-    expect(() =>
-      withRpcUrl(config, "https://api.mainnet-beta.solana.com"),
-    ).toThrow(/Devnet RPC/u);
+    expect(() => withRpcUrl(config, "https://api.mainnet-beta.solana.com")).toThrow(/Devnet RPC/u);
   });
 });
 
@@ -57,28 +55,31 @@ describe("REST URL construction", () => {
 
   it("uses OpenAPI V2 statKeys instead of repeated legacy statKey params", async () => {
     let requestedUrl = "";
-    const fetchImpl = async (input: URL | RequestInfo): Promise<Response> => {
-      requestedUrl = String(input);
-      return Response.json({
-        ts: 1,
-        statsToProve: [
-          { key: 1001, value: 7, period: 0 },
-          { key: 1002, value: 3, period: 0 },
-        ],
-        eventStatRoot: bytes(10),
-        summary: {
-          fixtureId: 99,
-          updateStats: {
-            updateCount: 1,
-            minTimestamp: 86_400_000,
-            maxTimestamp: 86_400_001,
+    const fetchImpl = (input: URL | RequestInfo): Promise<Response> => {
+      requestedUrl =
+        input instanceof URL ? input.toString() : typeof input === "string" ? input : input.url;
+      return Promise.resolve(
+        Response.json({
+          ts: 1,
+          statsToProve: [
+            { key: 1001, value: 7, period: 0 },
+            { key: 1002, value: 3, period: 0 },
+          ],
+          eventStatRoot: bytes(10),
+          summary: {
+            fixtureId: 99,
+            updateStats: {
+              updateCount: 1,
+              minTimestamp: 86_400_000,
+              maxTimestamp: 86_400_001,
+            },
+            eventStatsSubTreeRoot: bytes(11),
           },
-          eventStatsSubTreeRoot: bytes(11),
-        },
-        statProofs: [[], []],
-        subTreeProof: [],
-        mainTreeProof: [],
-      });
+          statProofs: [[], []],
+          subTreeProof: [],
+          mainTreeProof: [],
+        }),
+      );
     };
     const client = new TxlineClient({
       config: devnetConfig(),

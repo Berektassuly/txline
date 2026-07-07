@@ -70,21 +70,30 @@ Python changes:
 ```bash
 cd python
 python -m pip install -e ".[dev]"
-python -m pytest
-python -m ruff check .
 python -m ruff format --check .
+python -m ruff check .
 python -m mypy src
+python -m pytest --cov=txline --cov-report=term-missing --cov-report=xml
+python -m bandit -q -r src -c pyproject.toml
+python -m pip_audit . --strict
 python -m build
+python -m twine check --strict dist/*
 ```
 
 TypeScript changes:
 
 ```bash
 cd typescript
-npm ci
+npm ci --ignore-scripts
+npm run security:audit
+npm run security:signatures
+npm run format
+npm run lint
 npm run typecheck
 npm test
+npm run test:coverage
 npm run build
+npm run verify:package
 ```
 
 Run the full set for every affected package before asking for review.

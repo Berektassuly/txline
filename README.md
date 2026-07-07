@@ -33,8 +33,8 @@ Start with the README for the language you are using:
 | --- | --- | --- | --- | --- |
 | Rust crate | [`txline`](https://crates.io/crates/txline) | [`crates/txline/README.md`](crates/txline/README.md) | [`crates/txline`](crates/txline) | `cargo fmt`, `cargo clippy`, `cargo test` |
 | Go module | [`github.com/Berektassuly/txline/go/txline`](https://pkg.go.dev/github.com/Berektassuly/txline/go/txline) | [`go/README.md`](go/README.md) | [`go`](go) | `gofumpt`, `go test`, `go vet`, `staticcheck`, `govulncheck` |
-| Python package | [`txline`](https://pypi.org/project/txline/) | [`python/README.md`](python/README.md) | [`python`](python) | `pytest`, `ruff`, `mypy`, `build` |
-| TypeScript package | [`@beriktassuly/txline`](https://www.npmjs.com/package/@beriktassuly/txline) | [`typescript/README.md`](typescript/README.md) | [`typescript`](typescript) | `npm run typecheck`, `npm test`, `npm run build` |
+| Python package | [`txline`](https://pypi.org/project/txline/) | [`python/README.md`](python/README.md) | [`python`](python) | `ruff`, `mypy`, `pytest-cov`, `bandit`, `pip-audit`, `twine` |
+| TypeScript package | [`@beriktassuly/txline`](https://www.npmjs.com/package/@beriktassuly/txline) | [`typescript/README.md`](typescript/README.md) | [`typescript`](typescript) | `prettier`, `eslint`, `vitest`, `npm audit`, `npm pack` |
 
 ## Shared Capabilities
 
@@ -193,21 +193,30 @@ Python:
 ```bash
 cd python
 python -m pip install -e ".[dev]"
-python -m pytest
-python -m ruff check .
 python -m ruff format --check .
+python -m ruff check .
 python -m mypy src
+python -m pytest --cov=txline --cov-report=term-missing --cov-report=xml
+python -m bandit -q -r src -c pyproject.toml
+python -m pip_audit . --strict
 python -m build
+python -m twine check --strict dist/*
 ```
 
 TypeScript:
 
 ```bash
 cd typescript
-npm ci
+npm ci --ignore-scripts
+npm run security:audit
+npm run security:signatures
+npm run format
+npm run lint
 npm run typecheck
 npm test
+npm run test:coverage
 npm run build
+npm run verify:package
 ```
 
 Validation instruction tests use checked-in Anchor golden fixtures. Rust, Go,

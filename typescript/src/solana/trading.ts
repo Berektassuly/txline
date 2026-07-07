@@ -1,12 +1,6 @@
 import { decodeHash32, type Hash32Like, type ProofNode } from "../validation/proof.js";
-import type {
-  FixtureSummaryInput,
-  StatTermInput,
-} from "../validation/legacy.js";
-import type {
-  BinaryExpression,
-  TraderPredicate,
-} from "../validation/strategy.js";
+import type { FixtureSummaryInput, StatTermInput } from "../validation/legacy.js";
+import type { BinaryExpression, TraderPredicate } from "../validation/strategy.js";
 import {
   encodeBinaryExpression,
   encodeProofVec,
@@ -24,36 +18,16 @@ import {
   type TxlineInstruction,
 } from "./types.js";
 
-export const CREATE_INTENT_DISCRIMINATOR = [
-  216, 214, 79, 121, 23, 194, 96, 104,
-] as const;
-export const CREATE_TRADE_DISCRIMINATOR = [
-  183, 82, 24, 245, 248, 30, 204, 246,
-] as const;
-export const EXECUTE_MATCH_DISCRIMINATOR = [
-  76, 47, 91, 223, 20, 10, 147, 232,
-] as const;
-export const CLOSE_INTENT_DISCRIMINATOR = [
-  112, 245, 154, 249, 57, 126, 54, 122,
-] as const;
-export const SETTLE_TRADE_DISCRIMINATOR = [
-  252, 176, 98, 248, 73, 123, 8, 157,
-] as const;
-export const SETTLE_MATCHED_TRADE_DISCRIMINATOR = [
-  191, 233, 149, 116, 32, 239, 18, 65,
-] as const;
-export const CLAIM_VIA_RESOLUTION_DISCRIMINATOR = [
-  98, 206, 250, 87, 151, 135, 162, 181,
-] as const;
-export const CLAIM_BATCH_LEGACY_DISCRIMINATOR = [
-  254, 101, 89, 255, 169, 75, 207, 66,
-] as const;
-export const REFUND_BATCH_DISCRIMINATOR = [
-  227, 54, 194, 2, 78, 8, 104, 29,
-] as const;
-export const AUDIT_TRADE_RESULT_DISCRIMINATOR = [
-  50, 242, 243, 5, 209, 75, 76, 91,
-] as const;
+export const CREATE_INTENT_DISCRIMINATOR = [216, 214, 79, 121, 23, 194, 96, 104] as const;
+export const CREATE_TRADE_DISCRIMINATOR = [183, 82, 24, 245, 248, 30, 204, 246] as const;
+export const EXECUTE_MATCH_DISCRIMINATOR = [76, 47, 91, 223, 20, 10, 147, 232] as const;
+export const CLOSE_INTENT_DISCRIMINATOR = [112, 245, 154, 249, 57, 126, 54, 122] as const;
+export const SETTLE_TRADE_DISCRIMINATOR = [252, 176, 98, 248, 73, 123, 8, 157] as const;
+export const SETTLE_MATCHED_TRADE_DISCRIMINATOR = [191, 233, 149, 116, 32, 239, 18, 65] as const;
+export const CLAIM_VIA_RESOLUTION_DISCRIMINATOR = [98, 206, 250, 87, 151, 135, 162, 181] as const;
+export const CLAIM_BATCH_LEGACY_DISCRIMINATOR = [254, 101, 89, 255, 169, 75, 207, 66] as const;
+export const REFUND_BATCH_DISCRIMINATOR = [227, 54, 194, 2, 78, 8, 104, 29] as const;
+export const AUDIT_TRADE_RESULT_DISCRIMINATOR = [50, 242, 243, 5, 209, 75, 76, 91] as const;
 
 export interface CreateIntentAccounts {
   readonly maker: AddressLike;

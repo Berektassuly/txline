@@ -67,8 +67,11 @@ Use these values when adding the GitHub publisher on PyPI:
 | Workflow filename | `release.yml` |
 | Environment name | `release` |
 
-The workflow builds from `python/` and publishes `python/dist` through
-`pypa/gh-action-pypi-publish@release/v1` with `id-token: write`.
+The workflow validates the checked-in version, runs the same Python quality
+gates as CI, builds from `python/`, verifies the distribution metadata with
+`twine check`, smoke-installs the wheel in a clean virtual environment, and
+publishes `python/dist` through `pypa/gh-action-pypi-publish@release/v1` with
+`id-token: write`.
 
 ## crates.io
 
@@ -98,7 +101,8 @@ Package: `@beriktassuly/txline`
 
 The package metadata includes the GitHub repository URL required by npm trusted
 publishing. npm trusted publishing requires Node `22.14.0` or newer and npm
-`11.5.1` or newer; the workflow uses Node 24 and upgrades npm before publishing.
+`11.5.1` or newer; the workflow uses Node 24 and pinned npm `11.18.0` before
+publishing.
 
 Use these values when configuring the trusted publisher for the package:
 
@@ -114,7 +118,9 @@ Use these values when configuring the trusted publisher for the package:
 If npm requires the package to exist before the trusted publisher can be saved,
 do one bootstrap publish with a short-lived automation token, then remove the
 token and configure trusted publishing for later releases. After that, the
-workflow publishes with OIDC and no long-lived npm token.
+workflow runs the same TypeScript quality gates as CI, verifies the packed npm
+artifact with a clean smoke install, publishes with OIDC and no long-lived npm
+token, and requests npm provenance with `npm publish --provenance`.
 
 ## Go Module
 

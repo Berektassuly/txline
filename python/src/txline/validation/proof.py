@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import binascii
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any
@@ -33,6 +34,7 @@ class Hash32:
                 char in "0123456789abcdefABCDEF" for char in hex_candidate
             ):
                 return cls(bytes.fromhex(hex_candidate))
+            last_error: Exception | None = None
             for decoder in (
                 base64.b64decode,
                 base64.urlsafe_b64decode,
@@ -40,9 +42,11 @@ class Hash32:
             ):
                 try:
                     return cls(decoder(text))
-                except Exception:
-                    continue
-            raise ProofDecodeError("hash string is not valid base64, URL-safe base64, or hex")
+                except (binascii.Error, ValueError, ProofDecodeError) as exc:
+                    last_error = exc
+            raise ProofDecodeError(
+                "hash string is not valid base64, URL-safe base64, or hex"
+            ) from last_error
         return cls(value)
 
     def as_bytes(self) -> bytes:

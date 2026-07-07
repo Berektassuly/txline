@@ -2,8 +2,7 @@ import { ConfigError } from "./errors.js";
 
 export const DEVNET_API_HOST = "https://txline-dev.txodds.com";
 export const DEVNET_API_BASE = "https://txline-dev.txodds.com/api";
-export const DEVNET_GUEST_AUTH_URL =
-  "https://txline-dev.txodds.com/auth/guest/start";
+export const DEVNET_GUEST_AUTH_URL = "https://txline-dev.txodds.com/auth/guest/start";
 export const DEVNET_PROGRAM_ID = "6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J";
 export const DEVNET_TXL_MINT = "4Zao8ocPhmMgq7PdsYWyxvqySMGx7xb9cMftPMkEokRG";
 export const DEVNET_USDT_MINT = "ELWTKspHKCnCfCiCiqYw1EDH77k8VCP74dK9qytG2Ujh";
@@ -68,17 +67,13 @@ export function validateConfig(config: TxlineConfig): void {
     config.txlMint !== DEVNET_TXL_MINT ||
     config.usdtMint !== DEVNET_USDT_MINT
   ) {
-    throw new ConfigError(
-      "TxLINE Devnet config values must not be mixed with other networks",
-    );
+    throw new ConfigError("TxLINE Devnet config values must not be mixed with other networks");
   }
   if (config.rpcUrl.trim().length === 0) {
     throw new ConfigError("Solana RPC URL must not be empty");
   }
   if (looksLikeMainnetRpcUrl(config.rpcUrl)) {
-    throw new ConfigError(
-      "Solana RPC URL must be a Devnet RPC endpoint for this SDK build",
-    );
+    throw new ConfigError("Solana RPC URL must be a Devnet RPC endpoint for this SDK build");
   }
 }
 

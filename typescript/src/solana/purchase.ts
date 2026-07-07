@@ -1,9 +1,6 @@
 import type { TxlineClient } from "../client.js";
 import { InvalidInputError, SolanaSafetyError } from "../errors.js";
-import type {
-  PurchaseQuoteRequest,
-  PurchaseQuoteResponse,
-} from "../http/models.js";
+import type { PurchaseQuoteRequest, PurchaseQuoteResponse } from "../http/models.js";
 import { encodeWithDiscriminator } from "./codec.js";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -53,9 +50,7 @@ export function validateQuoteAmount(txlineAmount: number | bigint): void {
   }
   const amount = BigInt(txlineAmount);
   if (amount <= 0n || amount > BigInt(MAX_QUOTE_TXLINE_AMOUNT)) {
-    throw new InvalidInputError(
-      `txlineAmount must be 1..=${MAX_QUOTE_TXLINE_AMOUNT}`,
-    );
+    throw new InvalidInputError(`txlineAmount must be 1..=${MAX_QUOTE_TXLINE_AMOUNT}`);
   }
 }
 
@@ -69,11 +64,7 @@ export async function purchaseQuote(
     buyerPubkey: toAddress(buyerPubkey),
     txlineAmount: Number(txlineAmount),
   };
-  return await client.postJson<PurchaseQuoteResponse>(
-    "/guest/purchase/quote",
-    request,
-    false,
-  );
+  return await client.postJson<PurchaseQuoteResponse>("/guest/purchase/quote", request, false);
 }
 
 export async function devnetPurchaseSubscriptionTokenUsdtAccounts(
@@ -123,9 +114,8 @@ export function purchaseSubscriptionTokenUsdtInstruction(
       readonly(accounts.systemProgram),
       readonly(accounts.associatedTokenProgram),
     ],
-    data: encodeWithDiscriminator(
-      PURCHASE_SUBSCRIPTION_TOKEN_USDT_DISCRIMINATOR,
-      (writer) => writer.putU64(txlineAmount),
+    data: encodeWithDiscriminator(PURCHASE_SUBSCRIPTION_TOKEN_USDT_DISCRIMINATOR, (writer) =>
+      writer.putU64(txlineAmount),
     ),
   };
 }
@@ -135,28 +125,18 @@ export function rawPurchaseQuoteTransactionBytesUnchecked(
 ): Uint8Array {
   const bytes = decodeBase64(quote.transactionBase64);
   if (bytes.length === 0) {
-    throw new SolanaSafetyError(
-      "purchase quote transaction decoded to an empty byte buffer",
-    );
+    throw new SolanaSafetyError("purchase quote transaction decoded to an empty byte buffer");
   }
   return bytes;
 }
 
-export function validatePurchaseQuoteFinancialShape(
-  quote: PurchaseQuoteResponse,
-): void {
-  if (
-    quote.baseUsdtCost < 0 ||
-    quote.feeUsdtAmount < 0 ||
-    quote.totalUsdtCharged < 0
-  ) {
+export function validatePurchaseQuoteFinancialShape(quote: PurchaseQuoteResponse): void {
+  if (quote.baseUsdtCost < 0 || quote.feeUsdtAmount < 0 || quote.totalUsdtCharged < 0) {
     throw new SolanaSafetyError("purchase quote contains negative USDT amounts");
   }
   const expected = quote.baseUsdtCost + quote.feeUsdtAmount;
   if (Math.abs(expected - quote.totalUsdtCharged) > 0.000_001) {
-    throw new SolanaSafetyError(
-      "purchase quote total does not equal base cost plus fee",
-    );
+    throw new SolanaSafetyError("purchase quote total does not equal base cost plus fee");
   }
 }
 

@@ -1,25 +1,13 @@
 import { getProgramDerivedAddress } from "@solana/kit";
-import {
-  DEVNET_PROGRAM_ID,
-  DEVNET_TXL_MINT,
-  DEVNET_USDT_MINT,
-} from "../config.js";
-import {
-  addressBytes,
-  toAddress,
-  type AddressLike,
-} from "./types.js";
+import { DEVNET_PROGRAM_ID, DEVNET_TXL_MINT, DEVNET_USDT_MINT } from "../config.js";
+import { addressBytes, toAddress, type AddressLike } from "./types.js";
 import type { Address } from "@solana/kit";
 
-export const TOKEN_2022_PROGRAM_ID =
-  "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
-export const LEGACY_TOKEN_PROGRAM_ID =
-  "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
-export const ASSOCIATED_TOKEN_PROGRAM_ID =
-  "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
+export const TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+export const LEGACY_TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+export const ASSOCIATED_TOKEN_PROGRAM_ID = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
 export const SYSTEM_PROGRAM_ID = "11111111111111111111111111111111";
-export const COMPUTE_BUDGET_PROGRAM_ID =
-  "ComputeBudget111111111111111111111111111111";
+export const COMPUTE_BUDGET_PROGRAM_ID = "ComputeBudget111111111111111111111111111111";
 
 export interface Pda {
   readonly address: Address;
@@ -66,17 +54,11 @@ export class DevnetPdas {
   }
 
   async dailyScoresRoots(epochDay: number): Promise<Pda> {
-    return await findPda(
-      ["daily_scores_roots", u16Le(epochDay)],
-      this.programId,
-    );
+    return await findPda(["daily_scores_roots", u16Le(epochDay)], this.programId);
   }
 
   async dailyBatchRoots(epochDay: number): Promise<Pda> {
-    return await findPda(
-      ["daily_batch_roots", u16Le(epochDay)],
-      this.programId,
-    );
+    return await findPda(["daily_batch_roots", u16Le(epochDay)], this.programId);
   }
 
   async dailyOddsMerkleRoots(epochDay: number): Promise<Pda> {
@@ -85,10 +67,7 @@ export class DevnetPdas {
 
   async tenDailyFixturesRoots(epochDay: number): Promise<Pda> {
     const aligned = epochDay - (epochDay % 10);
-    return await findPda(
-      ["ten_daily_fixtures_roots", u16Le(aligned)],
-      this.programId,
-    );
+    return await findPda(["ten_daily_fixtures_roots", u16Le(aligned)], this.programId);
   }
 }
 
@@ -98,9 +77,7 @@ export async function findPda(
 ): Promise<Pda> {
   const [pda, bump] = await getProgramDerivedAddress({
     programAddress: toAddress(programAddress),
-    seeds: seeds.map((seed) =>
-      typeof seed === "string" ? new TextEncoder().encode(seed) : seed,
-    ),
+    seeds: seeds.map((seed) => (typeof seed === "string" ? new TextEncoder().encode(seed) : seed)),
   });
   return { address: pda, bump };
 }
@@ -110,11 +87,7 @@ export async function token2022AssociatedTokenAddress(
   mint: AddressLike,
 ): Promise<Pda> {
   return await findPda(
-    [
-      addressBytes(owner),
-      addressBytes(TOKEN_2022_PROGRAM_ID),
-      addressBytes(mint),
-    ],
+    [addressBytes(owner), addressBytes(TOKEN_2022_PROGRAM_ID), addressBytes(mint)],
     ASSOCIATED_TOKEN_PROGRAM_ID,
   );
 }

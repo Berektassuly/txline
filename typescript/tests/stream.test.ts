@@ -4,13 +4,7 @@ import { SseDecoder, parseSseBlock, typedEventFromRaw } from "../src/index.js";
 describe("SSE parsing", () => {
   it("parses id, event, retry, and multi-line data", () => {
     const event = parseSseBlock(
-      [
-        "id: 42",
-        "event: scores",
-        "retry: 2500",
-        'data: {"a":1,',
-        'data: "b":2}',
-      ].join("\n"),
+      ["id: 42", "event: scores", "retry: 2500", 'data: {"a":1,', 'data: "b":2}'].join("\n"),
     );
 
     expect(event).toEqual({

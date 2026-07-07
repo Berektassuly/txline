@@ -55,9 +55,7 @@ export class ScoresStatValidationV2 {
     response: ScoresStatValidationV2Response,
   ): ScoresStatValidationV2 {
     if (requestedStatKeys.length === 0) {
-      throw new InvalidInputError(
-        "V2 stat validation requires at least one stat key",
-      );
+      throw new InvalidInputError("V2 stat validation requires at least one stat key");
     }
     const statsToProve = response.statsToProve ?? [];
     if (statsToProve.length !== requestedStatKeys.length) {
@@ -79,12 +77,7 @@ export class ScoresStatValidationV2 {
         `statProofs length ${statProofs.length} does not match statsToProve length ${statsToProve.length}`,
       );
     }
-    return new ScoresStatValidationV2(
-      [...requestedStatKeys],
-      response,
-      statsToProve,
-      statProofs,
-    );
+    return new ScoresStatValidationV2([...requestedStatKeys], response, statsToProve, statProofs);
   }
 
   requestedStatKeys(): readonly number[] {
@@ -132,11 +125,7 @@ export class ScoresStatValidationV2 {
   }
 
   leadingSubset(length: number): StatValidationInput {
-    if (
-      !Number.isInteger(length) ||
-      length <= 0 ||
-      length > this.#statsToProve.length
-    ) {
+    if (!Number.isInteger(length) || length <= 0 || length > this.#statsToProve.length) {
       throw new ValidationPayloadError(
         "V2 payload subset length must be within the proved stat count",
       );

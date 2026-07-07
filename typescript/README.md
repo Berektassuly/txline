@@ -17,13 +17,22 @@ npm install @beriktassuly/txline
 Develop from this repository:
 
 ```bash
-npm install
+npm ci --ignore-scripts
+npm run security:audit
+npm run security:signatures
+npm run format
+npm run lint
 npm run typecheck
 npm test
+npm run test:coverage
 npm run build
+npm run verify:package
 ```
 
-The package uses npm and a checked-in `package-lock.json` for deterministic Node-compatible installs.
+The package uses npm and a checked-in `package-lock.json` for deterministic
+Node-compatible installs. CI also checks registry signatures, high-severity
+audit findings, typed ESLint rules, Prettier formatting, coverage thresholds,
+and the packed npm artifact.
 
 ## Quick Start
 
@@ -47,10 +56,7 @@ Live examples require caller-provided credentials, wallet signatures, and RPC/AP
 ## REST
 
 ```ts
-const quote = await client.purchaseQuote(
-  buyerAddress,
-  1_000n,
-);
+const quote = await client.purchaseQuote(buyerAddress, 1_000n);
 
 const validation = await client.scores().statValidationV2({
   fixtureId: 17_952_170,
@@ -121,10 +127,7 @@ const scores = await client.scores().historicalByFixture(fixtureId);
 const finalScore = scores.find(isFinalOutcomeRecord);
 if (!finalScore) throw new Error("final outcome not found");
 
-const outcome = extractFinalOutcome(
-  finalScore,
-  defaultSoccerFinalOutcomeConfig(),
-);
+const outcome = extractFinalOutcome(finalScore, defaultSoccerFinalOutcomeConfig());
 
 const validation = await client.scores().statValidationV2({
   fixtureId: outcome.fixtureId,
@@ -191,11 +194,7 @@ Trading builders are low-level by design: pass explicit accounts for `createInte
 Backend quote transaction bytes are not considered safe for signing by default.
 
 ```ts
-const checked = await client.purchaseQuoteChecked(
-  buyerAddress,
-  1_000n,
-  expectedBackendSigner,
-);
+const checked = await client.purchaseQuoteChecked(buyerAddress, 1_000n, expectedBackendSigner);
 
 const bytes = checked.transactionBytes;
 ```

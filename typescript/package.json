@@ -3,6 +3,7 @@
   "version": "0.4.0",
   "description": "TypeScript/JavaScript SDK for TxLINE Devnet REST, SSE, validation, and Solana instruction builders",
   "type": "module",
+  "packageManager": "npm@11.18.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "repository": {
@@ -24,8 +25,14 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "format": "prettier --check package.json tsconfig.json tsconfig.eslint.json .prettierrc.json eslint.config.mjs vitest.config.ts \"scripts/**/*.mjs\" \"src/**/*.ts\" \"tests/**/*.ts\" README.md NOTES.md",
+    "lint": "eslint . --max-warnings=0",
+    "security:audit": "npm audit --audit-level=high",
+    "security:signatures": "npm audit signatures",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run"
+    "verify:package": "node scripts/verify-package.mjs"
   },
   "keywords": [
     "txline",
@@ -41,8 +48,14 @@
     "@solana/kit": "^7.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^24.0.0",
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^10.6.0",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.4",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.63.0",
     "vitest": "^4.1.10"
   }
 }

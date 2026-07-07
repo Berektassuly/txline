@@ -14,9 +14,7 @@ import {
   type TxlineInstruction,
 } from "./types.js";
 
-export const REQUEST_DEVNET_FAUCET_DISCRIMINATOR = [
-  49, 178, 104, 8, 23, 120, 186, 21,
-] as const;
+export const REQUEST_DEVNET_FAUCET_DISCRIMINATOR = [49, 178, 104, 8, 23, 120, 186, 21] as const;
 
 export interface RequestDevnetFaucetAccounts {
   readonly user: AddressLike;

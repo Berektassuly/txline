@@ -40,9 +40,7 @@ export interface StatTermInput {
   readonly statProof: readonly ProofNode[];
 }
 
-export function fixtureSummaryInput(
-  validation: ScoresStatValidation,
-): FixtureSummaryInput {
+export function fixtureSummaryInput(validation: ScoresStatValidation): FixtureSummaryInput {
   return {
     fixtureId: validation.summary.fixtureId,
     updateCount: validation.summary.updateStats.updateCount,
@@ -60,9 +58,7 @@ export function primaryStatTerm(validation: ScoresStatValidation): StatTermInput
   };
 }
 
-export function secondaryStatTerm(
-  validation: ScoresStatValidation,
-): StatTermInput | undefined {
+export function secondaryStatTerm(validation: ScoresStatValidation): StatTermInput | undefined {
   if (validation.statToProve2 && validation.statProof2) {
     return {
       statToProve: validation.statToProve2,
@@ -73,9 +69,7 @@ export function secondaryStatTerm(
   if (!validation.statToProve2 && !validation.statProof2) {
     return undefined;
   }
-  throw new ValidationPayloadError(
-    "legacy response contains only one of statToProve2/statProof2",
-  );
+  throw new ValidationPayloadError("legacy response contains only one of statToProve2/statProof2");
 }
 
 export function timestampMsToEpochDay(timestampMs: number): number {

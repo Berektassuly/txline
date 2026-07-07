@@ -15,9 +15,7 @@ import {
   type TxlineInstruction,
 } from "./types.js";
 
-export const SUBSCRIBE_DISCRIMINATOR = [
-  254, 28, 191, 138, 156, 179, 183, 53,
-] as const;
+export const SUBSCRIBE_DISCRIMINATOR = [254, 28, 191, 138, 156, 179, 183, 53] as const;
 
 export interface SubscribeAccounts {
   readonly user: AddressLike;
@@ -44,9 +42,7 @@ export function validateSubscriptionWeeks(weeks: number): void {
   }
 }
 
-export async function devnetSubscribeAccounts(
-  user: AddressLike,
-): Promise<SubscribeAccounts> {
+export async function devnetSubscribeAccounts(user: AddressLike): Promise<SubscribeAccounts> {
   const pdas = new DevnetPdas();
   return {
     user,

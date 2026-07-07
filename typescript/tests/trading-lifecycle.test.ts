@@ -16,7 +16,6 @@ import {
   createIntentPlan,
   createTradeInstruction,
   createTradePlan,
-  defaultSoccerFinalOutcomeConfig,
   ensureTermsHash,
   executeMatchInstruction,
   executeMatchPlan,
@@ -51,7 +50,6 @@ import {
   type Scores,
   type SettleMatchedTradeAccounts,
   type SettleTradeAccounts,
-  type StatValidationInput,
   type TxlineInstruction,
 } from "../src/index.js";
 
@@ -78,9 +76,9 @@ describe("final outcome records", () => {
     expect(() => extractFinalOutcome({ ...finalScore(1, 0), stats: { "1": 1 } })).toThrow(
       /missing stat key 2/u,
     );
-    expect(() =>
-      extractFinalOutcome({ ...finalScore(1, 0), action: "score_updated" }),
-    ).toThrow(/action=game_finalised, statusId=100, period=100/u);
+    expect(() => extractFinalOutcome({ ...finalScore(1, 0), action: "score_updated" })).toThrow(
+      /action=game_finalised, statusId=100, period=100/u,
+    );
   });
 
   it("finds the final outcome in a score sequence", () => {
@@ -117,9 +115,7 @@ describe("market terms and terms hashes", () => {
       "participant1",
       traderPredicate(-1, comparison.greaterThan()),
     );
-    expect(marketIntentParamsFromScoreMarketTerms(spread).op).toEqual(
-      binaryExpression.subtract(),
-    );
+    expect(marketIntentParamsFromScoreMarketTerms(spread).op).toEqual(binaryExpression.subtract());
   });
 
   it("validates caller-provided terms hashes without deriving a preimage", () => {
@@ -128,9 +124,7 @@ describe("market terms and terms hashes", () => {
     expect([...ensureTermsHash(hash)]).toEqual([...hash]);
     expect(ensureTermsHash(hash)).not.toBe(hash);
     expect(() => ensureTermsHash(hash.slice(0, 31))).toThrow(/exactly 32 bytes/u);
-    expect(() => ensureTermsHash([...hash.slice(0, 31), 300])).toThrow(
-      /0..=255/u,
-    );
+    expect(() => ensureTermsHash([...hash.slice(0, 31), 300])).toThrow(/0..=255/u);
   });
 });
 

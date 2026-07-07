@@ -27,19 +27,16 @@ describe("proof decoding", () => {
 
 describe("V2 stat validation", () => {
   it("checks requested stat key order and response lengths", () => {
-    const validation = ScoresStatValidationV2.fromResponse(
-      [1001, 1002],
-      responseWith(2),
-    );
+    const validation = ScoresStatValidationV2.fromResponse([1001, 1002], responseWith(2));
 
     expect(validation.requestedStatKeys()).toEqual([1001, 1002]);
     expect(validation.toValidationInput().stats).toHaveLength(2);
   });
 
   it("rejects length and order mismatches", () => {
-    expect(() =>
-      ScoresStatValidationV2.fromResponse([1001, 1002, 1003], responseWith(2)),
-    ).toThrow(/statsToProve length/u);
+    expect(() => ScoresStatValidationV2.fromResponse([1001, 1002, 1003], responseWith(2))).toThrow(
+      /statsToProve length/u,
+    );
 
     const response = responseWith(2);
     response.statsToProve = [...response.statsToProve].reverse();

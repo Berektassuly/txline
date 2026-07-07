@@ -1,10 +1,10 @@
 import {
-  AccountRole,
   decompileTransactionMessage,
   getCompiledTransactionMessageDecoder,
   getPublicKeyFromAddress,
   getTransactionDecoder,
   verifySignature,
+  type AccountRole,
   type Address,
 } from "@solana/kit";
 import { DEVNET_PROGRAM_ID } from "../config.js";
@@ -23,11 +23,7 @@ import {
   SYSTEM_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
 } from "./pda.js";
-import {
-  isSignerRole,
-  toAddress,
-  type AddressLike,
-} from "./types.js";
+import { isSignerRole, toAddress, type AddressLike } from "./types.js";
 
 export interface PurchaseTransactionSafetyConfig {
   readonly txlineProgramId: AddressLike;
@@ -99,9 +95,7 @@ export async function verifyPurchaseTransactionBytes(
   config: PurchaseTransactionSafetyConfig,
 ): Promise<PurchaseTransactionSafetyReport> {
   if (!config.expectedBackendSigner) {
-    throw new SolanaSafetyError(
-      "safe purchase validation requires an expected backend signer",
-    );
+    throw new SolanaSafetyError("safe purchase validation requires an expected backend signer");
   }
   return await verifyPurchaseTransactionBytesLowLevelUncheckedBackendSigner(
     transactionBytes,
@@ -116,9 +110,7 @@ export async function verifyPurchaseTransactionBytesLowLevelUncheckedBackendSign
   requireBackendSigner = false,
 ): Promise<PurchaseTransactionSafetyReport> {
   if (transactionBytes.length === 0) {
-    throw new SolanaSafetyError(
-      "purchase quote transaction decoded to an empty byte buffer",
-    );
+    throw new SolanaSafetyError("purchase quote transaction decoded to an empty byte buffer");
   }
 
   let transaction: ReturnType<ReturnType<typeof getTransactionDecoder>["decode"]>;
@@ -130,9 +122,7 @@ export async function verifyPurchaseTransactionBytesLowLevelUncheckedBackendSign
     });
   }
 
-  const compiled = getCompiledTransactionMessageDecoder().decode(
-    transaction.messageBytes,
-  );
+  const compiled = getCompiledTransactionMessageDecoder().decode(transaction.messageBytes);
   if (
     "addressTableLookups" in compiled &&
     Array.isArray(compiled.addressTableLookups) &&
@@ -149,9 +139,7 @@ export async function verifyPurchaseTransactionBytesLowLevelUncheckedBackendSign
   const feePayer = message.feePayer.address;
   const expectedBuyer = toAddress(config.expectedBuyer);
   if (feePayer !== expectedBuyer) {
-    throw new SolanaSafetyError(
-      "purchase transaction fee payer is not the expected buyer",
-    );
+    throw new SolanaSafetyError("purchase transaction fee payer is not the expected buyer");
   }
 
   const expectedBackend = config.expectedBackendSigner
@@ -188,15 +176,8 @@ export async function verifyPurchaseTransactionBytesLowLevelUncheckedBackendSign
 
     if (programAddress === txlineProgramId) {
       purchaseInstructionCount += 1;
-      verifyPurchaseInstructionData(
-        Uint8Array.from(instruction.data ?? []),
-        config,
-      );
-      await verifyPurchaseInstructionAccounts(
-        instruction.accounts ?? [],
-        config,
-        expectedBackend,
-      );
+      verifyPurchaseInstructionData(Uint8Array.from(instruction.data ?? []), config);
+      await verifyPurchaseInstructionAccounts(instruction.accounts ?? [], config, expectedBackend);
     }
   }
 
@@ -231,9 +212,7 @@ async function backendSignaturePresent(
 ): Promise<boolean> {
   const signature = transaction.signatures[expectedBackend];
   if (!signature) {
-    throw new SolanaSafetyError(
-      "expected backend signer is not present in transaction accounts",
-    );
+    throw new SolanaSafetyError("expected backend signer is not present in transaction accounts");
   }
   if (signature.every((byte) => byte === 0)) {
     return false;
@@ -252,8 +231,7 @@ function rejectUnexpectedBuyerSigner(
   accounts: readonly { readonly address: Address; readonly role: AccountRole }[] = [],
 ): void {
   const buyerAccount = accounts[0];
-  const buyerIsSigner =
-    buyerAccount !== undefined && isSignerRole(buyerAccount.role);
+  const buyerIsSigner = buyerAccount !== undefined && isSignerRole(buyerAccount.role);
   if (
     buyerIsSigner &&
     programAddress !== txlineProgramId &&
@@ -270,21 +248,14 @@ function verifyPurchaseInstructionData(
   config: LowLevelPurchaseTransactionSafetyConfig,
 ): void {
   if (data.length !== 16) {
-    throw new SolanaSafetyError(
-      `purchase instruction data length is ${data.length}, expected 16`,
-    );
+    throw new SolanaSafetyError(`purchase instruction data length is ${data.length}, expected 16`);
   }
   for (let i = 0; i < PURCHASE_SUBSCRIPTION_TOKEN_USDT_DISCRIMINATOR.length; i += 1) {
     if (data[i] !== PURCHASE_SUBSCRIPTION_TOKEN_USDT_DISCRIMINATOR[i]) {
-      throw new SolanaSafetyError(
-        "TxLINE instruction is not purchase_subscription_token_usdt",
-      );
+      throw new SolanaSafetyError("TxLINE instruction is not purchase_subscription_token_usdt");
     }
   }
-  const amount = new DataView(data.buffer, data.byteOffset + 8, 8).getBigUint64(
-    0,
-    true,
-  );
+  const amount = new DataView(data.buffer, data.byteOffset + 8, 8).getBigUint64(0, true);
   if (amount !== BigInt(config.expectedTxlineAmount)) {
     throw new SolanaSafetyError(
       `purchase txlineAmount ${amount} does not match expected ${config.expectedTxlineAmount}`,

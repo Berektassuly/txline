@@ -1,10 +1,6 @@
 import { ValidationPayloadError } from "../errors.js";
 import type { Fixture, OddsPayload, UpdateStats } from "../http/models.js";
-import {
-  decodeHash32,
-  normalizeProofNode,
-  type ProofNode,
-} from "../validation/proof.js";
+import { decodeHash32, normalizeProofNode, type ProofNode } from "../validation/proof.js";
 import type {
   BinaryExpression,
   Comparison,
@@ -12,11 +8,7 @@ import type {
   StatPredicate,
   TraderPredicate,
 } from "../validation/strategy.js";
-import type {
-  FixtureSummaryInput,
-  ScoreStat,
-  StatTermInput,
-} from "../validation/legacy.js";
+import type { FixtureSummaryInput, ScoreStat, StatTermInput } from "../validation/legacy.js";
 import type { StatLeafInput, StatValidationInput } from "../validation/v2.js";
 
 export class ByteWriter {
@@ -67,12 +59,7 @@ export class ByteWriter {
   }
 
   putI64(value: number | bigint): void {
-    const bigintValue = assertBigIntRange(
-      value,
-      -(1n << 63n),
-      (1n << 63n) - 1n,
-      "i64",
-    );
+    const bigintValue = assertBigIntRange(value, -(1n << 63n), (1n << 63n) - 1n, "i64");
     const bytes = new Uint8Array(8);
     new DataView(bytes.buffer).setBigInt64(0, bigintValue, true);
     this.writeBytes(bytes);
@@ -133,10 +120,7 @@ export function encodeProofVec(writer: ByteWriter, proof: readonly ProofNode[] =
   });
 }
 
-export function encodeTraderPredicate(
-  writer: ByteWriter,
-  predicate: TraderPredicate,
-): void {
+export function encodeTraderPredicate(writer: ByteWriter, predicate: TraderPredicate): void {
   writer.putI32(predicate.threshold);
   encodeComparison(writer, predicate.comparison);
 }
@@ -151,17 +135,11 @@ export function encodeComparison(writer: ByteWriter, comparison: Comparison): vo
   }
 }
 
-export function encodeBinaryExpression(
-  writer: ByteWriter,
-  op: BinaryExpression,
-): void {
+export function encodeBinaryExpression(writer: ByteWriter, op: BinaryExpression): void {
   writer.putU8("add" in op ? 0 : 1);
 }
 
-export function encodeScoresBatchSummary(
-  writer: ByteWriter,
-  summary: FixtureSummaryInput,
-): void {
+export function encodeScoresBatchSummary(writer: ByteWriter, summary: FixtureSummaryInput): void {
   writer.putI64(summary.fixtureId);
   writer.putI32(summary.updateCount);
   writer.putI64(summary.minTimestamp);
@@ -175,10 +153,7 @@ export function encodeStatTerm(writer: ByteWriter, term: StatTermInput): void {
   encodeProofVec(writer, term.statProof);
 }
 
-export function encodeStatValidationInput(
-  writer: ByteWriter,
-  input: StatValidationInput,
-): void {
+export function encodeStatValidationInput(writer: ByteWriter, input: StatValidationInput): void {
   writer.putI64(input.ts);
   encodeScoresBatchSummary(writer, input.fixtureSummary);
   encodeProofVec(writer, input.fixtureProof);
@@ -204,10 +179,7 @@ export function encodeNDimensionalStrategy(
   writer.putVec(strategy.discretePredicates, encodeStatPredicate);
 }
 
-export function encodeStatPredicate(
-  writer: ByteWriter,
-  predicate: StatPredicate,
-): void {
+export function encodeStatPredicate(writer: ByteWriter, predicate: StatPredicate): void {
   if ("single" in predicate) {
     writer.putU8(0);
     writer.putU8(predicate.single.index);
@@ -269,23 +241,13 @@ export function nonnegativeU32(value: number, name: string): number {
   return value;
 }
 
-function assertIntegerRange(
-  value: number,
-  min: number,
-  max: number,
-  name: string,
-): void {
+function assertIntegerRange(value: number, min: number, max: number, name: string): void {
   if (!Number.isSafeInteger(value) || value < min || value > max) {
     throw new ValidationPayloadError(`${name} value ${value} is out of range`);
   }
 }
 
-function assertBigIntRange(
-  value: number | bigint,
-  min: bigint,
-  max: bigint,
-  name: string,
-): bigint {
+function assertBigIntRange(value: number | bigint, min: bigint, max: bigint, name: string): bigint {
   const bigintValue = typeof value === "bigint" ? value : BigInt(value);
   if (bigintValue < min || bigintValue > max) {
     throw new ValidationPayloadError(`${name} value ${value} is out of range`);

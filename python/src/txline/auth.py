@@ -7,7 +7,8 @@ from dataclasses import dataclass
 
 from txline.errors import InvalidInputError
 
-API_TOKEN_HEADER = "X-Api-Token"
+# Public HTTP header name, not a credential value.
+API_TOKEN_HEADER = "X-Api-Token"  # nosec B105
 
 
 @dataclass(frozen=True, slots=True)

@@ -56,9 +56,7 @@ export class ScoresClient {
   }): Promise<ScoresStatValidationV2> {
     ensurePositiveSeq(options.seq);
     if (options.statKeys.length === 0) {
-      throw new InvalidInputError(
-        "V2 stat validation requires at least one stat key",
-      );
+      throw new InvalidInputError("V2 stat validation requires at least one stat key");
     }
     const statKeysCsv = options.statKeys.join(",");
     const response = await this.client.getJson<ScoresStatValidationV2Response>(

@@ -95,11 +95,7 @@ describe("trading instruction golden fixtures", () => {
       "trading",
       "execute_match",
     );
-    expectData(
-      closeIntentInstruction(programId, closeIntentAccounts()),
-      "trading",
-      "close_intent",
-    );
+    expectData(closeIntentInstruction(programId, closeIntentAccounts()), "trading", "close_intent");
     expectData(
       settleTradeInstruction(programId, settleTradeAccounts(), settleTradeParams()),
       "trading",
@@ -124,25 +120,13 @@ describe("trading instruction golden fixtures", () => {
       "claim_via_resolution",
     );
     expectData(
-      claimBatchLegacyInstruction(
-        programId,
-        claimBatchLegacyAccounts(),
-        claimBatchLegacyParams(),
-      ),
+      claimBatchLegacyInstruction(programId, claimBatchLegacyAccounts(), claimBatchLegacyParams()),
       "trading",
       "claim_batch_legacy",
     );
+    expectData(refundBatchInstruction(programId, refundBatchAccounts()), "trading", "refund_batch");
     expectData(
-      refundBatchInstruction(programId, refundBatchAccounts()),
-      "trading",
-      "refund_batch",
-    );
-    expectData(
-      auditTradeResultInstruction(
-        programId,
-        auditTradeResultAccounts(),
-        auditTradeResultParams(),
-      ),
+      auditTradeResultInstruction(programId, auditTradeResultAccounts(), auditTradeResultParams()),
       "trading",
       "audit_trade_result",
     );
@@ -151,7 +135,9 @@ describe("trading instruction golden fixtures", () => {
   it("matches Rust account order and roles for trading builders", () => {
     const programId = key(200);
 
-    expect(createIntentInstruction(programId, createIntentAccounts(), createIntentParams()).accounts).toEqual([
+    expect(
+      createIntentInstruction(programId, createIntentAccounts(), createIntentParams()).accounts,
+    ).toEqual([
       meta(1, AccountRole.WRITABLE_SIGNER),
       meta(2, AccountRole.WRITABLE),
       meta(3, AccountRole.WRITABLE),
@@ -162,7 +148,9 @@ describe("trading instruction golden fixtures", () => {
       meta(8, AccountRole.READONLY),
     ]);
 
-    expect(createTradeInstruction(programId, createTradeAccounts(), createTradeParams()).accounts).toEqual([
+    expect(
+      createTradeInstruction(programId, createTradeAccounts(), createTradeParams()).accounts,
+    ).toEqual([
       meta(11, AccountRole.WRITABLE_SIGNER),
       meta(12, AccountRole.WRITABLE_SIGNER),
       meta(13, AccountRole.WRITABLE_SIGNER),
@@ -176,7 +164,9 @@ describe("trading instruction golden fixtures", () => {
       meta(21, AccountRole.READONLY),
     ]);
 
-    expect(executeMatchInstruction(programId, executeMatchAccounts(), executeMatchParams()).accounts).toEqual([
+    expect(
+      executeMatchInstruction(programId, executeMatchAccounts(), executeMatchParams()).accounts,
+    ).toEqual([
       meta(31, AccountRole.WRITABLE_SIGNER),
       meta(32, AccountRole.WRITABLE),
       meta(33, AccountRole.WRITABLE),
@@ -207,9 +197,7 @@ function expectData(
   fixtureSet: "validation" | "trading",
   name: string,
 ): void {
-  expect(Buffer.from(instruction.data).toString("hex")).toBe(
-    goldenData(fixtureSet, name),
-  );
+  expect(Buffer.from(instruction.data).toString("hex")).toBe(goldenData(fixtureSet, name));
 }
 
 function scoreValidation(): ScoresStatValidation {

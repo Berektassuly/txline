@@ -1,9 +1,5 @@
 import { ValidationPayloadError } from "../errors.js";
-import type {
-  FixtureBatchValidation,
-  FixtureValidation,
-  OddsValidation,
-} from "../http/models.js";
+import type { FixtureBatchValidation, FixtureValidation, OddsValidation } from "../http/models.js";
 import {
   fixtureSummaryInput,
   primaryStatTerm,
@@ -34,28 +30,13 @@ import {
   nonnegativeU32,
 } from "./codec.js";
 import { DevnetPdas } from "./pda.js";
-import {
-  readonly,
-  toAddress,
-  type AddressLike,
-  type TxlineInstruction,
-} from "./types.js";
+import { readonly, toAddress, type AddressLike, type TxlineInstruction } from "./types.js";
 
-export const VALIDATE_FIXTURE_DISCRIMINATOR = [
-  231, 129, 218, 86, 223, 114, 21, 126,
-] as const;
-export const VALIDATE_FIXTURE_BATCH_DISCRIMINATOR = [
-  85, 223, 204, 7, 4, 87, 157, 1,
-] as const;
-export const VALIDATE_ODDS_DISCRIMINATOR = [
-  192, 19, 91, 138, 104, 100, 212, 86,
-] as const;
-export const VALIDATE_STAT_DISCRIMINATOR = [
-  107, 197, 232, 90, 191, 136, 105, 185,
-] as const;
-export const VALIDATE_STAT_V2_DISCRIMINATOR = [
-  208, 215, 194, 214, 241, 71, 246, 178,
-] as const;
+export const VALIDATE_FIXTURE_DISCRIMINATOR = [231, 129, 218, 86, 223, 114, 21, 126] as const;
+export const VALIDATE_FIXTURE_BATCH_DISCRIMINATOR = [85, 223, 204, 7, 4, 87, 157, 1] as const;
+export const VALIDATE_ODDS_DISCRIMINATOR = [192, 19, 91, 138, 104, 100, 212, 86] as const;
+export const VALIDATE_STAT_DISCRIMINATOR = [107, 197, 232, 90, 191, 136, 105, 185] as const;
+export const VALIDATE_STAT_V2_DISCRIMINATOR = [208, 215, 194, 214, 241, 71, 246, 178] as const;
 
 export const DEFAULT_VALIDATION_COMPUTE_UNITS = 1_400_000;
 
@@ -151,9 +132,7 @@ export async function devnetValidateFixtureInstruction(
   validation: FixtureValidation,
 ): Promise<TxlineInstruction> {
   const pdas = new DevnetPdas();
-  const epochDay = timestampMsToEpochDay(
-    validation.summary.updateStats.minTimestamp,
-  );
+  const epochDay = timestampMsToEpochDay(validation.summary.updateStats.minTimestamp);
   const root = (await pdas.tenDailyFixturesRoots(epochDay)).address;
   return validateFixtureInstruction(programId, root, validation);
 }
@@ -170,17 +149,14 @@ export function validateFixtureBatchInstruction(
   return {
     programAddress: toAddress(programId),
     accounts: [readonly(tenDailyFixturesRoots)],
-    data: encodeWithDiscriminator(
-      VALIDATE_FIXTURE_BATCH_DISCRIMINATOR,
-      (writer) => {
-        writer.putU8(index);
-        writer.putI32(validation.metadata.totalUpdateCount);
-        writer.putI32(validation.metadata.numUniqueFixtures);
-        writer.putI64(validation.metadata.overallBatchStartTs);
-        writer.putI64(validation.metadata.overallBatchEndTs);
-        encodeProofVec(writer, validation.proof ?? []);
-      },
-    ),
+    data: encodeWithDiscriminator(VALIDATE_FIXTURE_BATCH_DISCRIMINATOR, (writer) => {
+      writer.putU8(index);
+      writer.putI32(validation.metadata.totalUpdateCount);
+      writer.putI32(validation.metadata.numUniqueFixtures);
+      writer.putI64(validation.metadata.overallBatchStartTs);
+      writer.putI64(validation.metadata.overallBatchEndTs);
+      encodeProofVec(writer, validation.proof ?? []);
+    }),
   };
 }
 
@@ -220,9 +196,7 @@ export async function devnetValidateOddsInstruction(
   validation: OddsValidation,
 ): Promise<TxlineInstruction> {
   const pdas = new DevnetPdas();
-  const epochDay = timestampMsToEpochDay(
-    validation.summary.updateStats.minTimestamp,
-  );
+  const epochDay = timestampMsToEpochDay(validation.summary.updateStats.minTimestamp);
   const root = (await pdas.dailyOddsMerkleRoots(epochDay)).address;
   return validateOddsInstruction(programId, root, validation);
 }

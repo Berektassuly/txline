@@ -1,9 +1,5 @@
 import { encodeWithDiscriminator } from "./codec.js";
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  SYSTEM_PROGRAM_ID,
-  TOKEN_2022_PROGRAM_ID,
-} from "./pda.js";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, SYSTEM_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "./pda.js";
 import {
   readonly,
   toAddress,

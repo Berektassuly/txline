@@ -132,12 +132,7 @@ export async function* typedStream<T>(
     const query: QueryEntries =
       options.fixtureId === undefined ? [] : [["fixtureId", options.fixtureId]];
     try {
-      const response = await client.sseResponse(
-        path,
-        query,
-        lastEventId,
-        options.signal,
-      );
+      const response = await client.sseResponse(path, query, lastEventId, options.signal);
       backoffMs = initialBackoffMs;
       const decoder = new SseDecoder();
       for await (const chunk of responseBytes(response)) {
@@ -175,7 +170,6 @@ export async function* typedStream<T>(
     }
 
     await sleep(backoffMs, options.signal);
-    backoffMs = Math.min(backoffMs * 2, maxBackoffMs);
   }
 }
 

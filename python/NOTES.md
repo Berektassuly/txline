@@ -62,6 +62,10 @@ does not expose admin/root management helpers as casual high-level flows.
 - `pydantic` is not used. DTOs are typed dataclasses with explicit conversion
   helpers to keep runtime dependencies small.
 
+After dependency or behavior changes, run formatting, linting, strict typing,
+coverage tests, security linting, dependency auditing, and package metadata
+checks with the commands listed in `README.md`.
+
 ## Intentional Gaps
 
 - No mainnet transaction flows are supported.

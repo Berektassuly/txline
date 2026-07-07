@@ -1,10 +1,6 @@
 import { ApiToken, AuthHeaders, GuestJwt, activationPreimage } from "./auth.js";
 import { devnetConfig, validateConfig, type TxlineConfig } from "./config.js";
-import {
-  MissingApiTokenError,
-  MissingGuestJwtError,
-  InvalidInputError,
-} from "./errors.js";
+import { MissingApiTokenError, MissingGuestJwtError, InvalidInputError } from "./errors.js";
 import { FixturesClient } from "./http/fixtures.js";
 import { OddsClient } from "./http/odds.js";
 import {
@@ -17,10 +13,7 @@ import {
 } from "./http/request.js";
 import { ScoresClient } from "./http/scores.js";
 import type { PurchaseQuoteResponse } from "./http/models.js";
-import {
-  purchaseQuote,
-  type AddressLike,
-} from "./solana/index.js";
+import { purchaseQuote, type AddressLike } from "./solana/index.js";
 import {
   devnetPurchaseSafetyConfig,
   validatedPurchaseQuote,
@@ -148,14 +141,10 @@ export class TxlineClient {
     walletSignatureBase64: string,
   ): Promise<ApiToken> {
     if (txSig.trim().length === 0) {
-      throw new InvalidInputError(
-        "subscription transaction signature must not be empty",
-      );
+      throw new InvalidInputError("subscription transaction signature must not be empty");
     }
     if (walletSignatureBase64.trim().length === 0) {
-      throw new InvalidInputError(
-        "wallet activation signature must not be empty",
-      );
+      throw new InvalidInputError("wallet activation signature must not be empty");
     }
     const response = await this.postJson<string | TokenResponse>(
       "/token/activate",
@@ -174,11 +163,7 @@ export class TxlineClient {
     return token;
   }
 
-  async getJson<T>(
-    path: string,
-    query: QueryEntries = [],
-    requireApiToken = true,
-  ): Promise<T> {
+  async getJson<T>(path: string, query: QueryEntries = [], requireApiToken = true): Promise<T> {
     return await this.requestJson<T>("GET", path, query, undefined, requireApiToken);
   }
 
@@ -188,14 +173,7 @@ export class TxlineClient {
     requireApiToken = true,
     decodeAs: "json" | "text" = "json",
   ): Promise<T> {
-    return await this.requestJson<T>(
-      "POST",
-      path,
-      [],
-      body,
-      requireApiToken,
-      decodeAs,
-    );
+    return await this.requestJson<T>("POST", path, [], body, requireApiToken, decodeAs);
   }
 
   async sseResponse(
@@ -246,22 +224,10 @@ export class TxlineClient {
     decodeAs: "json" | "text" = "json",
   ): Promise<T> {
     const stale = this.#guestJwt;
-    let response = await this.sendRequest(
-      method,
-      path,
-      query,
-      body,
-      requireApiToken,
-    );
+    let response = await this.sendRequest(method, path, query, body, requireApiToken);
     if (response.status === 401) {
       await this.refreshGuestSessionAfterFailure(stale);
-      response = await this.sendRequest(
-        method,
-        path,
-        query,
-        body,
-        requireApiToken,
-      );
+      response = await this.sendRequest(method, path, query, body, requireApiToken);
     }
     if (decodeAs === "text") {
       return (await decodeTextResponse(response)) as T;
@@ -286,7 +252,7 @@ export class TxlineClient {
     };
     if (body !== undefined) {
       headers["Content-Type"] = "application/json";
-      init.body = JSON.stringify(body, (_key, value) =>
+      init.body = JSON.stringify(body, (_key: string, value: unknown) =>
         typeof value === "bigint" ? value.toString() : value,
       );
     }
